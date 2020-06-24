@@ -2,7 +2,7 @@
 Standalone PVC migration
 
 ## Overview
-pvc-migrate automates migration of PersistentVolumeClaims and PersistentVolumes from OCP 3.x to OCP 4.x.
+pvc-migrate automates migration of PersistentVolumeClaims (PVCs) and PersistentVolumes (PVs) from OCP 3.x to OCP 4.x.
 
 ## Usage
 1. **Clone this git repo**
@@ -36,4 +36,26 @@ namespaces_to_migrate:
  
 5. **Run playbook automation**
    1. Run `./migrate_pv_data.sh` to kick off a series of Ansible Playbooks that will migrate PV/PVC data in selected namespaces
-   2. Upon successful completion, selected namespaces will be created on the *target cluster* and PV/PVC data from the *source cluster* will have been copied with *rsync* into dynamically provisioned PV/PVC pairs 
+   2. Upon successful completion, namespaces you selected will have been created on the *target cluster* and PV/PVC data from the *source cluster* will have been copied over with *rsync*. 
+   3. The list of migrated PVCs are visible in `output/pvc-data.json`
+   
+   
+6. **Run CAM in "no PVC migration" mode**
+   1. Your PV/PVC data has been migrated. You can use CAM to migrate the remaining OpenShift resources, which will connect to the PV/PVC data created by this tool.
+   2. To run CAM in "no PVC migration" mode, modify the `MigrationController` resource on the *target cluster*, then execute your migration as usual. The PVC migration steps will be skipped.
+```
+oc edit MigrationController -n openshift-migration
+```
+```
+apiVersion: migration.openshift.io/v1alpha1
+kind: MigrationController
+metadata:
+  name: migration-controller
+  namespace: openshift-migration
+spec:
+  [...]
+  mig_controller_image_fqin: quay.io/konveyor/mig-controller:release-1.2.2-hotfix-nopvs
+  [...]
+ ```
+   
+
