@@ -28,6 +28,7 @@ cat output/pvc-data.json
 {
   "pvc_name" : "rocketchat-data-claim",
   "pvc_namespace": "rocket-chat",
+  "capacity": "10Gi",
   "labels" : {
     "velero.io/backup-name": "bd778570-b286-11ea-8b3d-298baab088b3-f9mrj",
     "velero.io/restore-name": "bd778570-b286-11ea-8b3d-298baab088b3-rhz9q"
@@ -46,13 +47,13 @@ cat output/pvc-data.json
   "storage_class": "gp2",
   "bound": "Bound",
   "access_modes": ["ReadWriteOnce"],
-  "pvc_requested_storage": "10Gi",
   "node_name":  "ip-10-0-138-112.ec2.internal"
 }
 ,
 {
   "pvc_name" : "mssql-pvc",
   "pvc_namespace": "mssql-persistent",
+  "capacity": "10Gi",
   "labels" : {
     "app": "mssql"
 },
@@ -66,7 +67,6 @@ cat output/pvc-data.json
   "storage_class": "gp2",
   "bound": "Bound",
   "access_modes": ["ReadWriteOnce"],
-  "pvc_requested_storage": "10Gi",
   "node_name":  "ip-10-0-153-152.ec2.internal"
 }
 
