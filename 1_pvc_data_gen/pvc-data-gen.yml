@@ -9,6 +9,29 @@
         - namespaces_to_migrate is defined
 
 # -------
+# Write namespace-data.json with with namespaces and annotations
+  - block:
+
+    - name: Ensure output directory exists
+      file:
+        path: output
+        state: directory
+
+    - name: Read namespace resources
+      k8s_info:
+        kind: Namespace
+        name: "{{ item }}"
+        validate_certs: False
+      with_items: "{{ namespaces_to_migrate }}"
+      register: namespace_resources
+
+    - name: Render namespaces to output/namespace-data.json
+      template:
+        src: namespace-data.json.j2
+        dest: output/namespace-data.json      
+
+# -------
+# Write pvc-data.json with immediately accessible PVC data
   - block:
 
     - name: Ensure output directory exists
@@ -29,10 +52,66 @@
       with_items: "{{ namespaces_to_migrate }}"
       register: namespaced_pvcs
 
-    - name: Render PVCs to data format for migration
+    - name: Read Pods associated with namespaces
+      k8s_info:
+        kind: Pods
+        namespace: "{{ item }}"
+        validate_certs: False
+      with_items: "{{ namespaces_to_migrate }}"
+      register: namespaced_pods
+
+    # - name: Get PVCs attached to pods
+    #   shell: oc get pod -n mssql-persistent -o json | jq -r '.items[] .spec.volumes[] | select(.persistentVolumeClaim) | .persistentVolumeClaim.claimName'
+    #   with_items: "{{ namespaced_pods.results }}"
+    
+      # - name: Create mapping from PVC names names to Pod names`
+        
+
+    - name: Render PVCs to output/pvc-data.json
       template:
         src: pvc-data.json.j2
         dest: output/pvc-data.json      
+
+# -------
+# # Augment pvc-data.json to include source cluster filepath
+#   - block:
+#     - name: Read pvc-data.json back from rendered file
+#       set_fact:
+#         pvc_data: "{{ lookup('file', 'output/pvc-data.json') | from_json }}"
+
+#     - name: Render PV volumeNames corresponding to PVC list into variable
+#       set_fact:
+#         pv_names: "{{ lookup('template', 'pv-name.json.j2') }}"
+
+#     - name: Lookup PVs and extract PV UIDs
+#       k8s_info:
+#         kind: PersistentVolume
+#         name: "{{ item }}"
+#         validate_certs: False
+#       with_items: "{{ pv_names }}"
+#       register: pv_content
+
+#     - name: Render list of PV UIDs into variable
+#       set_fact:
+#         pv_uids: "{{ lookup('template', 'pv-uid.json.j2') }}"
+        
+#     - name: Zip together pvc_data with pv_uids
+#       set_fact: 
+#         zipped_pvc_pv_data: "{{ pvc_data | zip(pv_uids) | list }}"
+
+#     - name: Render combined PVC and PV info
+#       template:
+#         src: pvc-data-combined.json.j2
+#         dest: output/pvc-data-combined.json      
+
+
+    # - name: Read VolumeNames from PVCs
+    #   k8s_info:
+    #     kind: PersistentVolumeClaim
+    #     namespace: "{{ item }}"
+    #     validate_certs: False
+    #   with_items: "{{ namespaces_to_migrate }}"
+    #   register: namespaced_pvcs
 
 
       

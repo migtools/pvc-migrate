@@ -11,7 +11,8 @@
   "storage_class": {{ pvc_resource.spec.get("storageClassName", "") | to_json}},
   "bound": {{ pvc_resource.get("status", "").get("phase", "")| to_json }},
   "access_modes": {{ pvc_resource.spec.get("accessModes", "") | to_json }},
-  "node_name":  {{ pvc_resource.metadata.get("annotations", "").get("volume.kubernetes.io/selected-node", "") | to_json }}
+  "node_name":  {{ pvc_resource.metadata.get("annotations", "").get("volume.kubernetes.io/selected-node", "") | to_json }},
+  "volume_name": {{ pvc_resource.spec.get("volumeName", "") | to_json }}
 }
 {% endfor %}{{ "" if loop.last else "," }}
 {% endfor %}
