@@ -1,0 +1,52 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars/pvc-destination-gen.yml
+    - vars/storage-class-mappings.yml
+  tasks:
+    - name: Verify required variables are defined
+      assert:
+        that:
+          - pvc_data_filepath is defined
+
+    # -------
+    - block:
+        - name: Ensure pvc data file exists
+          stat:
+            path: "{{ pvc_data_filepath }}"
+          register: p
+
+        - debug: msg="PVC json file exists..."
+          when: p.stat.exists
+
+        - fail:
+          when: p.stat.exists == False
+
+        - name: Ensure namespace data file exists
+          stat:
+            path: "{{ namespace_data_filepath }}"
+          register: n
+
+        - debug: msg="Namespace json file exists..."
+          when: n.stat.exists
+
+        - fail:
+          when: n.stat.exists == False
+
+
+        - set_fact:
+            pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
+            namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
+
+
+    - name: ensure the namespaces are created for the pvcs
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'namespace.yml.j2') }}"
+      loop: "{{ namespace_data }}"
+
+    - name: ensure the pvcs are created on destination
+      k8s:
+        state: present
+        definition: "{{ lookup('template', 'pvc.yml.j2') }}"
+      loop: "{{ pvc_data }}"

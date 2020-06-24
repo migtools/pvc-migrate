@@ -1,0 +1,14 @@
+[
+  {
+    "name": "namespace1",
+    "annotations": {
+      "key1": "annotation1"
+    }
+  },
+  {
+    "name": "namespace2",
+    "annotations": {
+      "key2": "anotation2"
+    }
+  }
+]
