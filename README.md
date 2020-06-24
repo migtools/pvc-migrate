@@ -19,12 +19,35 @@ pip install openshift  # openshift module for ansible
 sudo yum install jq    # jq for json processing
 ```
 
-3. **Copy source and target cluster KUBECONFIG files authenticated with  *cluster-admin* privileges to `auth` directory**
+3. A detailed inventory would be required to be provided to this ansible playbooks so it can ssh into each node in the
+   cluster that might have a pvc
+   
+   ```
+   worker1.example.com ansible_private_key_file=~/worker1_key
+   worker2.exmaple.com ansible_private_key_file=~/worker2_key
+   worker3.example.com ansible_private_key_file=~/worker3_key
+   master1.example.com ansible_private_key_file=~/master1_key
+   master2.example.com ansible_private_key_file=~/master2_key
+   
+   [masters]
+   master1.example.com ansible_private_key_file=~/master1_key
+   master2.example.com ansible_private_key_file=~/master2_key
+   
+   [workers]
+   worker1.example.com ansible_private_key_file=~/worker1_key
+   worker2.exmaple.com ansible_private_key_file=~/worker2_key
+   worker3.example.com ansible_private_key_file=~/worker3_key
+   ```
+   
+   An ansible playbook will then be launched during a migration to ssh into the node and migrate the PV data to 
+   a destination cluster url using rsync command.
+
+4. **Copy source and target cluster KUBECONFIG files authenticated with  *cluster-admin* privileges to `auth` directory**
    1. Create `auth` directory inside of repository root:  `mkdir auth`
    1. Copy source cluster kubeconfig to `auth/KUBECONFIG_SRC`
    1. Copy target cluster kubeconfig to `auth/KUBECONFIG_TARGET`
    
-4. **Set list of namespaces to migrate PV/PVC data for**
+5. **Set list of namespaces to migrate PV/PVC data for**
    1. Copy sample config file as starting point: `cp 1_pvc_data_gen/vars/pvc-data-gen.yml.example pvc-data-gen.yml`
    1. Edit `1_pvc_data_gen/vars/pvc-data-gen.yml`, adding list of namespaces for which PV/PVC data should be migrated
    
