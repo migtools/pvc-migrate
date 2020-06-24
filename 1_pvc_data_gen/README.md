@@ -23,7 +23,40 @@ ansible-playbook pvc-data-gen.yml
 ```
 
 4. Examine generated output
+
+```bash
+cat output/namespace-data.json
+[
+{
+  "namespace": "rocket-chat",
+  "annotations": {
+    "openshift.io/backup-registry-hostname": "docker-registry.default.svc:5000",
+    "openshift.io/backup-server-version": "1.11",
+    "openshift.io/description": "",
+    "openshift.io/display-name": "",
+    "openshift.io/requester": "opentlc-mgr",
+    "openshift.io/sa.scc.mcs": "s0:c9,c4",
+    "openshift.io/sa.scc.supplemental-groups": "1000080000/10000",
+    "openshift.io/sa.scc.uid-range": "1000080000/10000"
+}
+}
+,
+{
+  "namespace": "mssql-persistent",
+  "annotations": {
+    "openshift.io/description": "",
+    "openshift.io/display-name": "",
+    "openshift.io/requester": "system:admin",
+    "openshift.io/sa.scc.mcs": "s0:c26,c5",
+    "openshift.io/sa.scc.supplemental-groups": "1000660000/10000",
+    "openshift.io/sa.scc.uid-range": "1000660000/10000"
+}
+}
+
+]
 ```
+
+```bash
 cat output/pvc-data.json  
 
 [
