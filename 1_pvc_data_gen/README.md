@@ -19,3 +19,8 @@ namespaces_to_migrate:
 export KUBECONFIG="/path/to/src_cluster_kubeconfig"
 ansible-playbook pvc-data-gen.yml
 ```
+
+4. Examine generated output
+```
+cat output/pvc-data.json  
+```

@@ -11,14 +11,14 @@
 # -------
   - block:
 
-    - name: Ensure artifacts directory exists
+    - name: Ensure output directory exists
       file:
-        path: artifacts
+        path: output
         state: directory
 
     - name: Remove existing migration_pvcs.json
       file:
-        path: artifacts/migration_pvcs.json
+        path: output/migration_pvcs.json
         state: absent
 
     - name: Read PVCs associated with namespaces
@@ -32,7 +32,7 @@
     - name: Render PVCs to data format for migration
       template:
         src: pvc-data.json.j2
-        dest: artifacts/pvc-data.json      
+        dest: output/pvc-data.json      
 
 
       
