@@ -1,0 +1,10 @@
+[
+{% for namespace_list in namespace_resources.results %}
+{% for namespace_resource in namespace_list.resources %}
+{
+  "namespace": {{ namespace_resource.metadata.name | to_json }},
+  "annotations": {{ namespace_resource.metadata.get("annotations", "") | to_nice_json }}
+}
+{% endfor %}{{ "" if loop.last else "," }}
+{% endfor %}
+]

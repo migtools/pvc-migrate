@@ -1,0 +1,18 @@
+[
+{% for zipped in zipped_pvc_pv_data %}
+{
+  "pvc_name" : {{ zipped[0].pvc_name | to_json }},
+  "pvc_namespace": {{ zipped[0].pvc_namespace | to_json }},
+  "capacity": {{ zipped[0].capacity | to_json }},
+  "labels" : {{ zipped[0].labels | to_nice_json }},
+  "annotations": {{ zipped[0].annotations | to_nice_json }},
+  "uid": {{ zipped[0].uid | to_json }},
+  "storage_class": {{ zipped[0].storage_class | to_json}},
+  "bound": {{ zipped[0].bound | to_json }},
+  "access_modes": {{ zipped[0].access_modes | to_json }},
+  "node_name":  {{ zipped[0].node_name | to_json }},
+  "node_mountpath: {{ zipped[1] | to_json }},
+  "volume_name": {{ zipped[0].volume_name | to_json }}
+}
+{{ "" if loop.last else "," }}{% endfor %}
+]

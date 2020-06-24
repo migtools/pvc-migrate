@@ -1,0 +1,6 @@
+[
+{% for pvc in pvc_data %}
+{{ pvc.get("volume_name", "") | to_json }}
+{{ "" if loop.last else "," }}
+{% endfor %}
+]
