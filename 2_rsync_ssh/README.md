@@ -25,3 +25,16 @@ oc apply -f pod.yaml
 # Create service
 oc apply -f svc.yaml
 ```
+
+Note that the resources will be created in your current namespace
+
+# Rsync to pod
+
+To rsync files to the destination pod :
+
+```sh
+# get the URL to the Service
+URL=`oc get svc ssh -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
+
+rsync -aPv <DIR> root@${URL}:<DESTINATION_DIR> 
+```
