@@ -1,5 +1,7 @@
 # pvc-data-gen
 
+This playbook scans source cluster PVCs in a `namespaces_to_migrate` list provided by the user and generates info needed by stage 2 for destination cluster PVC creation and data sync.
+
 ## Usage:
 
 1. Create your own copy of vars file 
