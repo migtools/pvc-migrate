@@ -44,7 +44,10 @@ cat output/pvc-data.json
 },
   "uid": "66b89c3e-c25b-4d11-8af4-a167aeaf9013",
   "storage_class": "gp2",
-  "bound": "Bound"
+  "bound": "Bound",
+  "access_modes": ["ReadWriteOnce"],
+  "pvc_requested_storage": "10Gi",
+  "node_name":  "ip-10-0-138-112.ec2.internal"
 }
 ,
 {
@@ -61,8 +64,11 @@ cat output/pvc-data.json
 },
   "uid": "f9187fd8-feb2-4542-a18f-6f41f293a571",
   "storage_class": "gp2",
-  "bound": "Bound"
+  "bound": "Bound",
+  "access_modes": ["ReadWriteOnce"],
+  "pvc_requested_storage": "10Gi",
+  "node_name":  "ip-10-0-153-152.ec2.internal"
 }
-​
+
 ]
 ```
