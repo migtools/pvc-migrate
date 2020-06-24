@@ -1,0 +1,3 @@
+namespaces_to_migrate:
+ - rocket-chat
+ - nginx-pv

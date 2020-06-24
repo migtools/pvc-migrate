@@ -1,0 +1,15 @@
+[
+{% for pvc_list in namespaced_pvcs.results %}
+{% for pvc_resource in pvc_list.resources %}
+{
+  "pvc_name" : {{ pvc_resource.metadata.name | to_json }},
+  "pvc_namespace": {{ pvc_resource.metadata.namespace | to_json }},
+  "labels" : {{ pvc_resource.metadata.get("labels", "") | to_nice_json }},
+  "annotations": {{ pvc_resource.metadata.get("annotations", "") | to_nice_json }},
+  "uid": {{ pvc_resource.metadata.get("uid", "") | to_json }},
+  "storage_class": {{ pvc_resource.spec.get("storageClassName", "") | to_json}},
+  "bound": {{ pvc_resource.get("status", "").get("phase", "")| to_json }}
+}
+{% endfor %}{{ "" if loop.last else "," }}
+{% endfor %}
+]

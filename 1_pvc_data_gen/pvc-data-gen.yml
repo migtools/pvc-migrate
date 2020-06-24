@@ -1,0 +1,41 @@
+---
+- hosts: localhost
+  vars_files:
+   - vars/pvc-data-gen.yml
+  tasks:
+  - name: Verify required variables are defined
+    assert:
+      that:
+        - namespaces_to_migrate is defined
+
+# -------
+  - block:
+
+    - name: Ensure output directory exists
+      file:
+        path: output
+        state: directory
+
+    - name: Remove existing migration_pvcs.json
+      file:
+        path: output/migration_pvcs.json
+        state: absent
+
+    - name: Read PVCs associated with namespaces
+      k8s_info:
+        kind: PersistentVolumeClaim
+        namespace: "{{ item }}"
+        validate_certs: False
+      with_items: "{{ namespaces_to_migrate }}"
+      register: namespaced_pvcs
+
+    - name: Render PVCs to data format for migration
+      template:
+        src: pvc-data.json.j2
+        dest: output/pvc-data.json      
+
+
+      
+
+
+
