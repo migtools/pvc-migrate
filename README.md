@@ -37,7 +37,7 @@ namespaces_to_migrate:
 5. **Run playbook automation**
    1. Run `./migrate_pvc_data.sh` to kick off a series of Ansible Playbooks that will migrate PV/PVC data in selected namespaces
    2. Upon successful completion, namespaces you selected will have been created on the *target cluster* and PV/PVC data from the *source cluster* will have been copied over with *rsync*. 
-   3. The list of migrated PVCs are visible in `output/pvc-data.json`
+   3. The list of migrated PVCs are visible in `output/pvc-data.json` 
    
    
 6. **Run CAM in "no PVC migration" mode**
@@ -57,5 +57,8 @@ spec:
   mig_controller_image_fqin: quay.io/konveyor/mig-controller:release-1.2.2-hotfix-nopvs
   [...]
  ```
+ 
+ ## Troubleshooting
+If any steps fail, you can edit the shell script `migrate_pvc_data.sh`, toggling steps on/off as needed to re-run desired steps. If some PVCs migrate successfully and some fail, you can remove the PVCs that already migrated successfully from `output/pvc-data.json` and comment out `ansible-playbook 1_pvc_data_gen/pvc-data-gen.yml` to skip the step of interrogating the *source cluster* for PVCs to migrate.
    
 
