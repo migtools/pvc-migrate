@@ -14,7 +14,7 @@ namespaces_to_migrate:
 - mssql-persistent
 ```
 
-3. Run playbook while kubeconfig is set for connection to source cluster
+3. Run playbook while kubeconfig is set for connection to **source cluster**
 ```
 export KUBECONFIG="/path/to/src_cluster_kubeconfig"
 ansible-playbook pvc-data-gen.yml
