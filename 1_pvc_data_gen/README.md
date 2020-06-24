@@ -44,7 +44,7 @@ cat output/pvc-data.json
 },
   "uid": "66b89c3e-c25b-4d11-8af4-a167aeaf9013",
   "storage_class": "gp2",
-  "bound": "False"
+  "bound": "Bound"
 }
 ,
 {
@@ -61,7 +61,7 @@ cat output/pvc-data.json
 },
   "uid": "f9187fd8-feb2-4542-a18f-6f41f293a571",
   "storage_class": "gp2",
-  "bound": "False"
+  "bound": "Bound"
 }
 ​
 ]
