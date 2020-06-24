@@ -24,6 +24,8 @@ ansible-playbook pvc-data-gen.yml
 
 4. Examine generated output
 
+
+**output/namespace-data.json**
 ```bash
 cat output/namespace-data.json
 [
@@ -56,6 +58,7 @@ cat output/namespace-data.json
 ]
 ```
 
+**output/output/pvc-data.json**
 ```bash
 cat output/pvc-data.json  
 
