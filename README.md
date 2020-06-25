@@ -46,7 +46,7 @@ namespaces_to_migrate:
 
 The `pvc-migrate` tooling is designed to work in 3 stages :    
 
-#### Stage 1 - Detect source cluster info (PVCs, Pods, Nodes)
+#### Stage 1 - Detect source cluster info (PVCs, Pods, Nodes) ([Stage 1 README](1_pvc_data_gen/README.md))
 ```
 1_pvc_data_gen
 ````
@@ -54,7 +54,7 @@ This preliminary stage collects information about PVCs, PVs and Pods from the So
 
 **Note**: changes to the source cluster after completion of Stage 1 will not be considered by next stages. You can re-run stage 1 to refresh data as needed before running Stages 2 and 3.
 
-#### Stage 2 - Migrate PVC definitions to destination cluster
+#### Stage 2 - Migrate PVC definitions to destination cluster ([Stage 2 README](2_pvc_destination_gen/README.md))
 ```
 2_pvc_destination_gen
 ````
@@ -62,7 +62,7 @@ This stage translates and migrates PVC resource definitions from the source to t
 
 **Note**: after completion of this stage, you will have PVCs created on the destination cluster which _may_ or _may not_ be `Bound`. This is expected as some provisioners do not create PVs until PVCs are bound to pods. This stage __requires__ users to provide Storage Class selections for the destination cluster. Please see notes on [Storage Class Selection](./docs/sc-selection.md)
 
-#### Stage 3 - RSync PVC data to destination cluster
+#### Stage 3 - RSync PVC data to destination cluster ([Stage 3 README](3_run_rsync/README.md))
 ```
 3_run_rsync
 ```
