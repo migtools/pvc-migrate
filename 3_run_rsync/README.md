@@ -16,4 +16,4 @@ export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
 ansible-playbook run-rsync.yml -e mig_run_sync_phase=true  -e mig_dest_ssh_key=~/.ssh/libra.pem
 ```
 
-3. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate) to complete the migration.
+3. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate#7-run-cam-in-no-pvc-migration-mode) to complete the migration.
