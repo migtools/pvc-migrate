@@ -11,7 +11,7 @@ try:
     k8s_client = config.new_client_from_config()
     dyn_client = DynamicClient(k8s_client)
 except: 
-    print("Failed while setting up OpenShift client. Ensure KUBECONFIG is set.")
+    print("\n[!] Failed while setting up OpenShift client. Ensure KUBECONFIG is set. ")
     exit(1)
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -36,13 +36,14 @@ print("Running stage 1 data processing on namespaces: {}".format(data['namespace
 
 # Generate data for namespace-data.json
 for namespace in data['namespaces_to_migrate']:
+    print("Processing namespace: [{}]".format(namespace))
     v1_namespaces = dyn_client.resources.get(api_version='v1', kind='Namespace')
     try:
         ns = v1_namespaces.get(name=namespace)
         ns_out = {'namespace': namespace, 'annotations': ns.metadata.annotations.__dict__}
         output.append(ns_out)
     except:
-        print("v1/namespace not found: " + namespace)
+        print("\n[!] v1/namespace not found: " + namespace)
     
 
 with open(script_dir+'/output/namespace-data.json', 'w') as f:
@@ -52,6 +53,8 @@ output = []
 
 # Generate data for pvc-data.json and node-list.json
 for namespace in data['namespaces_to_migrate']:
+    print("Processing PVCs for namespace: [{}]".format(namespace))
+
     v1_pods = dyn_client.resources.get(api_version='v1', kind='Pod')
     pod_list = v1_pods.get(namespace=namespace)
 
