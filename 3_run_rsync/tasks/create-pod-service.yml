@@ -1,11 +1,23 @@
 - debug: msg="{{ item }}"
 
+- name: create a configmap for public key
+  k8s:
+    state: present
+    definition:
+      api_version: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ cm_name }}"
+        namespace: "{{ pvc_namespace }}"
+      data:
+        authorized_keys: "{{ public_key }}"
+
 - name: create a pod for rsync
   k8s:
     state: present
     definition: "{{ lookup('template', 'pod.yml.j2') }}"
 
-- name: create a service for rync
+- name: create a service for rsync
   k8s:
     state: present
     definition: "{{ lookup('template', 'svc.yml.j2') }}"
