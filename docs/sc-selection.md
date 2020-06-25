@@ -2,9 +2,9 @@
 
 `Stage-2` of `pvc-migrate` is responsible for migrating PVCs to destination. 
 
-While migrating PVCs, `pvc-migrate` cannot automatically choose the correct Storage Class for migrated PVCs on the destination side. For instance, an RWO mode PV using `glusterfs-storage` on an OpenShift 3.x cluster typically corresponds to `cephrbd` SC on destination. On the other hand, an RWX mode PV on `glusterfs-storage` corresponds to `cephfs` SC on the destination side. 
+While migrating PVCs, `pvc-migrate` cannot automatically choose the correct StorageClass (SC) for migrated PVCs on the destination side. For instance, an RWO mode PV using `glusterfs-storage` on an OpenShift 3.x cluster typically corresponds to `cephrbd` SC on destination. On the other hand, an RWX mode PV on `glusterfs-storage` corresponds to `cephfs` SC on the destination side. 
 
-`pvc-migrate` ___cannot___ automatically determine the desired conversion between Storage Classes. However, it provides users with a way for the user to provide a static mapping of storage class names between the source and the destination cluster.
+`pvc-migrate` ___cannot___ automatically determine the desired conversion between Storage Classes. You must provide a static mapping of StorageClass names between the source and the destination cluster.
 
 See an example mapping below :
 
@@ -22,9 +22,9 @@ mig_storage_class_mappings:
   <SC-NAME-ON-SOURCE>_<MODE>: <SC-NAME-ON-DESTINATION> 
 ```
 
-If a valid mapping is not found, `pvc-migrate` will simply retain the original Storage Class in the migrated PVC, which may result in a failure. 
+If a valid mapping is not found, `pvc-migrate` will simply retain the original StorageClass in the migrated PVC, which may result in a failure. 
 
-If a PVC doesn't have any Storage Class assigned, migrated PVC will use the `default` Storage Class on the destination. 
+If a PVC doesn't have any StorageClass assigned, migrated PVC will use the `default` StorageClass on the destination. 
 
 ## Usage
 
