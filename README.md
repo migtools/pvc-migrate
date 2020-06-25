@@ -72,9 +72,9 @@ This final stage launches pods to attach with the PVCs created in the previous s
 
 
 ### 6. Running the PVC migration
-1. Run stage 1: [1_pvc_data_gen/README.md](1_pvc_data_gen/README.md)
-1. Run stage 2: [2_pvc_destination_gen](2_pvc_destination_gen/README.md)
-1. Run stage 3: [3_run_rsync/README.md](3_run_rsync/README.md)
+1. Run steps in: [1_pvc_data_gen/README.md](1_pvc_data_gen/README.md)
+1. Run steps in: [2_pvc_destination_gen/README.md](2_pvc_destination_gen/README.md)
+1. Run steps in: [3_run_rsync/README.md](3_run_rsync/README.md)
    
    
 ### 7. Run CAM in "no PVC migration" mode
