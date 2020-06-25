@@ -6,13 +6,13 @@
 `pvc-migrate` automates migration of PersistentVolumeClaims (PVCs) and PersistentVolumes (PVs) from OCP 3.x to OCP 4.x.
 
 
-### Important notes and resources
+### Prerequisite steps
 
 * The application on the source side needs to be quiesced before attempting migration
 * PVs to be migrated need to be attached with pods, unattached PVs will not be migrated
-* SSH Connection to 3.x Clusters [Instructions to help setup SSH](./docs/inventory-notes.md)
-* Storage Class Selection [Storage Class Instructions](./docs/sc-selection.md)
-* Building an SSH Container image [Container](./2_pvc_destination_gen/extras/container)
+* SSH Connection to 3.x Clusters need to be configured - [Instructions](./docs/inventory-notes.md)
+* Storage Class Selections must be made - [Instructions](./docs/sc-selection.md)
+* SSH container image must be built - [Instructions](./2_pvc_destination_gen/extras/container)
 
 ## Usage
 ### 1. Clone this git repo
@@ -21,7 +21,7 @@
 git clone https://github.com/konveyor/pvc-migrate && cd pvc-migrate
 ```
 
-### 2. Install prerequisites
+### 2. Automation prerequisites
 
 ```
 pip install ansible==2.9.7     # ansible 2.9
