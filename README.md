@@ -9,20 +9,25 @@ pvc-migrate automates migration of PersistentVolumeClaims (PVCs) and PersistentV
 The `pvc-migrate` tooling is designed to work in 3 stages :    
 
 ---
+
 ### Stage 1 
 ```
 1_pvc_data_gen
 ````
 This preliminary stage collects information about PVCs, PVs and Pods from the Source cluster. It creates a JSON report of collected data which will be consumed by subsequent stages. 
 **Note**: changes to the source cluster after completion of Stage 1 will not be considered by next stages. You can re-run stage 1 to refresh data as needed before running Stages 2 and 3.
+
 ---
+
 ### Stage 2
 ```
 2_pvc_destination_gen
 ````
 This stage migrates PVCs from the source to the destination cluster. 
 **Note**: after completion of this stage, you will have PVCs created on the destination cluster which _may_ or _may not_ be `Bound`. This is expected as some provisioners do not create PVs until PVCs are bound to pods. This stage __requires__ users to provide Storage Class selections for the destination cluster. Please see notes on [Storage Class Selection](./docs/sc-selection.md)
+
 ---
+
 ### Stage 3
 ```
 3_run_rsync
