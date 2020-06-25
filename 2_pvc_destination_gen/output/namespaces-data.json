@@ -1,0 +1,14 @@
+[
+  {
+    "name": "rocket-chat",
+    "annotations": {
+      "key1": "annotation1"
+    }
+  },
+  {
+    "name": "mssql-persistent",
+    "annotations": {
+      "key2": "anotation2"
+    }
+  }
+]
