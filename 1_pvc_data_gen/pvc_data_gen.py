@@ -19,6 +19,7 @@ if not os.path.exists(script_dir+'/output'):
 with open(script_dir+'/vars/pvc-data-gen.yml') as f:
     data = yaml.load(f, Loader=yaml.FullLoader)
 
+node_list = []
 output = []
 
 for namespace in data['namespaces_to_migrate']:
@@ -61,6 +62,8 @@ for namespace in data['namespaces_to_migrate']:
             boundPodName = pod.metadata.name
             boundPodUid = pod.metadata.uid
             nodeName = pod.spec.nodeName
+        if nodeName != "":
+            node_list.append({'name': nodeName})
         pvc_out = {
                 'pvc_name': pvc.metadata.name,
                 'pvc_namespace': pvc.metadata.namespace,
@@ -84,6 +87,9 @@ for namespace in data['namespaces_to_migrate']:
 with open(script_dir+'/output/pvc-data.json', 'w') as f:
     ns_data = json.dump(output, f, indent=4)
 
+# Write the result back out to pvc-data.json
+with open(script_dir+'/output/node-list.json', 'w') as f:
+    ns_data = json.dump(node_list, f, indent=4)
 
             
 
