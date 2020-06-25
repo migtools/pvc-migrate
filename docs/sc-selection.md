@@ -28,6 +28,5 @@ If a PVC doesn't have any StorageClass assigned, migrated PVC will use the `defa
 
 ## Usage
 
-- Before running [Stage 2](../2_pvc_destination_gen), the StorageClass mapping must be provided in [pvc-destination-gen.yml](../2_pvc_destination_gen/vars/pvc-destination-gen.yml)
-- A sample mapping is available at [pvc-destination-gen.yml.sample](../2_pvc_destination_gen/vars/pvc-destination-gen.yml.example) 
+- Before running [Stage 2](../2_pvc_destination_gen), the StorageClass mapping must be provided in [storage-class-mappings.yml](../2_pvc_destination_gen/vars/storage-class-mappings.yml)
 
