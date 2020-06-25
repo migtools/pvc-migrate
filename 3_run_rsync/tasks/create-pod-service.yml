@@ -55,3 +55,14 @@
             and svc.resources[0].status.loadBalancer.ingress is defined"
   retries: 100
   delay: 3
+
+- set_fact:
+    mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+    mig_dest_data_location: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
+    mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ pvc_name }}/"
+  #    mig_source_host : get from inventory
+    mig_dest_ssh_key : "{{ rsync_public_key_filepath }}"
+
+- name: stub for rsync to run
+#  TODO: @pranavgaikwad
+
