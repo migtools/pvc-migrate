@@ -73,7 +73,7 @@
     file:
       path: "~/.ssh"
       state: directory
-    become: yes 
+    become: yes
 
   - name: "Copying private key to source node"
     copy:
@@ -97,4 +97,36 @@
   - when: sync_output.rc != 0
     fail:
       msg: "There was an error syncing data across clusters. Please re-run the task with --tags final_phase or --tags sync_phase. The data transfer will begin at the point it previously failed."
-      
+
+
+- name: cleanup the transfer pod for rsync
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', 'pod.yml.j2') }}"
+
+- name: wait for pod to be deleted
+  k8s_info:
+    api_version: v1
+    kind: pod
+    name: "{{ pod_name }}"
+    namespace: "{{ pvc_namespace }}"
+  register: p
+  until: "{{ p.resources | length == 0 }}"
+  retries: 100
+  delay: 3
+
+- name: cleanup the service for rsync
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', 'svc.yml.j2') }}"
+
+- name: wait for pod to be deleted
+  k8s_info:
+    api_version: v1
+    kind: service
+    name: "{{ svc_name }}"
+    namespace: "{{ pvc_namespace }}"
+  register: s
+  until: "{{ s.resources | length == 0 }}"
+  retries: 100
+  delay: 3
