@@ -1,6 +1,6 @@
 # Stage 2: pvc-destination-gen
 
-This playbook takes the input from stage 1 and create the PVCs in destination cluster
+This playbook takes the input from [stage 1](../1_pvc_data_gen) and create the PVCs in destination cluster
 
 ## Usage:
 
@@ -17,9 +17,11 @@ cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
 ansible-playbook pvc-destination-gen.yml
 ```
-4. verify that PVCs are created on destination
+4. Verify that PVCs are created on destination
 
 ```
 # export KUBECONFIG=/path/to/destination/kubeconfig
 oc get pvc -A
 ```
+
+5. Move on to [stage 3](../3_run_rsync)
