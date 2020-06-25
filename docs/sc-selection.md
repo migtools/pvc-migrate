@@ -26,7 +26,7 @@ If a valid mapping is not found, `pvc-migrate` will simply retain the original S
 
 If a PVC doesn't have any StorageClass assigned, migrated PVC will use the `default` StorageClass on the destination. 
 
-## Usage
+## Required Steps for Stage 2
 
 - Before running [Stage 2](../2_pvc_destination_gen), the StorageClass mapping must be provided in [storage-class-mappings.yml](../2_pvc_destination_gen/vars/storage-class-mappings.yml)
 
