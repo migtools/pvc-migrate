@@ -1,0 +1,3 @@
+pvc_data_filepath: output/pvc-data.json
+namespace_data_filepath: output/namespaces-data.json
+transfer_pod_image:

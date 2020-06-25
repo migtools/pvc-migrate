@@ -1,0 +1,40 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars/run-rsync.yml
+  tasks:
+    - name: Verify required variables are defined
+      assert:
+        that:
+          - pvc_data_filepath is defined
+
+    # -------
+    - block:
+      - name: Ensure pvc data file exists
+        stat:
+          path: "{{ pvc_data_filepath }}"
+        register: p
+
+      - debug: msg="PVC json file exists..."
+        when: p.stat.exists
+
+      - fail:
+        when: p.stat.exists == False
+
+      - set_fact:
+          pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
+          namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
+
+
+    - name: create pod and service
+      vars:
+        pvc_namespace: "{{ item.pvc_namespace }}"
+        pvc_name: "{{ item.pvc_name }}"
+        pod_name: "{{ pvc_name }}-ssh-rync"
+        svc_name: "{{ pod_name }}-ssh"
+        cm_name: "{{ pod_name }}-public-key-cm"
+        public_key: "{{ lookup('file', rsync_public_key_filepath) }}"
+      include_tasks: "tasks/create-pod-service.yml"
+      with_items: "{{ pvc_data }}"
+
+

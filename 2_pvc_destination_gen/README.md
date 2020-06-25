@@ -19,7 +19,7 @@ cp -r 1_pvc_data_gen/output 2_pvc_destination_gen/output
 
 3. Run playbook while kubeconfig is set for connection to **destination cluster**
 ```
-export KUBECONFIG="/path/to/src_cluster_kubeconfig"
+export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
 ansible-playbook pvc-destination-gen.yml
 ```
 4. verify that pvc's are created on destination

@@ -1,0 +1,23 @@
+- name: Ensure private directory exists
+  file:
+    path: "{{ private_key_directory }}"
+    state: directory
+
+- name: Ensure public directory exists
+  file:
+    path: "{{ public_key_directory }}"
+    state: directory
+
+- set_fact:
+    private_key_filepath: "{{ private_key_directory }}/rsync-pod-private.pem"
+    public_key_filepath: "{{ public_key_directory }}/rsync-pod-public.pub"
+
+- name: create private key
+  openssl_privatekey:
+    path: "{{ private_key_filepath }}"
+
+- name: generate an OpenSSL public key in OpenSSH v2 format
+  openssl_publickey:
+    path: "{{ public_key_filepath }}"
+    privatekey_path: "{{ private_key_filepath }}"
+    format: OpenSSH
