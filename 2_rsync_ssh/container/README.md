@@ -4,14 +4,23 @@ The Rsync and SSH container allows running rsync in an OpenShift pod exposed via
 
 # Build container
 
+Create a SSH key to be registered with the container 
+
+```sh
+ssh-keygen -f <SSH_KEY_FILE_NAME>
+```
+
+Note that the key will be _baked in_ the container.
+
 To build the container :
 
 ```sh
 export IMG=quay.io/<repository>/<container_name>:<tag>
 
-docker build --build-arg sshpass=<SSH_PASS> -t $IMG -f Dockerfile .
+docker build --build-arg sshkey=<SSH_KEY_FILE_NAME> -t $IMG -f Dockerfile .
 ```
 
+Note that 
 # Deploy container
 
 To deploy pod with the SSH container image on OpenShift cluster :
