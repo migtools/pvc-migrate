@@ -1,6 +1,7 @@
 import json
 import yaml
 import urllib3
+import os
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from kubernetes import client, config
@@ -9,8 +10,28 @@ from openshift.dynamic import DynamicClient
 k8s_client = config.new_client_from_config()
 dyn_client = DynamicClient(k8s_client)
 
-with open('vars/pvc-data-gen.yml') as f:
+script_dir = os.path.dirname(os.path.realpath(__file__))
+
+if not os.path.exists(script_dir+'/output'):
+    os.makedirs(script_dir+'/output')
+
+
+with open(script_dir+'/vars/pvc-data-gen.yml') as f:
     data = yaml.load(f, Loader=yaml.FullLoader)
+
+output = []
+
+for namespace in data['namespaces_to_migrate']:
+    v1_namespaces = dyn_client.resources.get(api_version='v1', kind='Namespace')
+    ns = v1_namespaces.get(name=namespace)
+    ns_out = {'namespace': namespace, 'annotations': ns.metadata.annotations.__dict__}
+    output.append(ns_out)
+    #ns_out = json.dumps(ns_out)
+    
+
+# Write the result back out to pvc-data.json
+with open(script_dir+'/output/namespace-data.json', 'w') as f:
+    ns_data = json.dump(output, f, indent=4)
 
 output = []
 
@@ -60,7 +81,7 @@ for namespace in data['namespaces_to_migrate']:
     
 
 # Write the result back out to pvc-data.json
-with open('output/pvc-data.json', 'w') as f:
+with open(script_dir+'/output/pvc-data.json', 'w') as f:
     ns_data = json.dump(output, f, indent=4)
 
 
