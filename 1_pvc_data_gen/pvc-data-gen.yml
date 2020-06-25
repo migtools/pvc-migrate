@@ -52,13 +52,13 @@
       with_items: "{{ namespaces_to_migrate }}"
       register: namespaced_pvcs
 
-    - name: Read Pods associated with namespaces
-      k8s_info:
-        kind: Pods
-        namespace: "{{ item }}"
-        validate_certs: False
-      with_items: "{{ namespaces_to_migrate }}"
-      register: namespaced_pods
+    # - name: Read Pods associated with namespaces
+    #   k8s_info:
+    #     kind: Pods
+    #     namespace: "{{ item }}"
+    #     validate_certs: False
+    #   with_items: "{{ namespaces_to_migrate }}"
+    #   register: namespaced_pods
 
     # - name: Get PVCs attached to pods
     #   shell: oc get pod -n mssql-persistent -o json | jq -r '.items[] .spec.volumes[] | select(.persistentVolumeClaim) | .persistentVolumeClaim.claimName'
