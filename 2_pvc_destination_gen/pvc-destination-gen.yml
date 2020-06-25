@@ -45,8 +45,16 @@
         definition: "{{ lookup('template', 'namespace.yml.j2') }}"
       loop: "{{ namespace_data }}"
 
+    - name: "Converting pvc data"
+      set_fact:
+        mig_dest_pvc_data: "{{ pvc_data + [(item | combine(mig_converted_sc, recursive=true))] }}"
+      vars:
+        mig_converted_sc:
+          storage_class: "{{ mig_storage_class_mappings.get(item.storage_class+'_'+('RWX' if 'ReadWriteMany' in item.access_modes else 'RWO'), item.storage_class)}}"
+      loop: "{{ pvc_data }}"
+
     - name: ensure the pvcs are created on destination
       k8s:
         state: present
         definition: "{{ lookup('template', 'pvc.yml.j2') }}"
-      loop: "{{ pvc_data }}"
+      loop: "{{ mig_source_pvc_data }}"
