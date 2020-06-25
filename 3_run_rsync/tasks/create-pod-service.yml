@@ -61,6 +61,7 @@
     mig_dest_data_location: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
     mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ volume_name }}/"
     failed_pvcs: []
+    successful_pvcs: []
 
 - delegate_to: "{{ mig_source_host|mandatory }}"
   vars:
@@ -84,7 +85,7 @@
     become: yes
 
   - name: wait for dns
-    shell: "dig {{ mig_dest_service_url }}"
+    shell: "nslookup {{ mig_dest_service_url }}"
     register: dig_output
     until: dig_output.rc == 0
     retries: 100
@@ -104,6 +105,15 @@
     set_fact:
       failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
     when: sync_output.rc != 0
+
+  - name: collect successful pvcs
+    vars:
+      successful_pvc:
+        - name: "{{ pvc_name }}"
+          namespace: "{{ pvc_namespace }}"
+    set_fact:
+      successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
+    when: sync_output.rc == 0
    
   - name: "Removing private key from source node"
     file:

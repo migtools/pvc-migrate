@@ -43,3 +43,7 @@
     - copy:
         content: "{{ failed_pvcs | to_json }}"
         dest: "{{ failed_pvcs_filepath }}"
+
+    - copy:
+        content: "{{ successful_pvcs | to_json }}"
+        dest: "{{ successful_pvcs_filepath }}"
