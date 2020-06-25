@@ -7,11 +7,11 @@ a LoadBalancer service through which we can run ssh/scp/rsync externally
 
 1. Create your own copy of vars file 
 ```
-cp vars/run-sync.yml.example vars/run-sync.yml
+cp vars/run-rsync.yml.example vars/run-rsync.yml
 ```
 
 2. Run playbook while kubeconfig is set for connection to **destination cluster**
 ```
 export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
-ansible-playbook rsync.yml
+ansible-playbook run-rsync.yml -e mig_run_sync_phase=true  -e mig_dest_ssh_key=~/.ssh/libra.pem
 ```
