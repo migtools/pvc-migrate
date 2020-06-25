@@ -27,7 +27,6 @@ for namespace in data['namespaces_to_migrate']:
     ns = v1_namespaces.get(name=namespace)
     ns_out = {'namespace': namespace, 'annotations': ns.metadata.annotations.__dict__}
     output.append(ns_out)
-    #ns_out = json.dumps(ns_out)
     
 
 # Write the result back out to pvc-data.json
@@ -80,7 +79,6 @@ for namespace in data['namespaces_to_migrate']:
                 'bound_pod_uid': boundPodUid
         }
         output.append(pvc_out)
-    #ns_out = json.dumps(ns_out)
     
 
 # Write the result back out to pvc-data.json
