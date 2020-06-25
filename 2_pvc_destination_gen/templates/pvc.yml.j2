@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  annotations: {{ item.annotations }}
   finalizers:
   - kubernetes.io/pvc-protection
   name: {{ item.pvc_name }}
@@ -11,5 +10,5 @@ spec:
   resources:
     requests:
       storage: {{ item.capacity }}
-  storageClassName: {{ mig_storage_class_mapping[item.storage_class] }}
+  storageClassName: {{ item.storage_class }}
   volumeMode: Filesystem

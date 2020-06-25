@@ -18,7 +18,7 @@
       "volume.kubernetes.io/selected-node": "ip-10-0-138-112.ec2.internal"
     },
     "uid": "66b89c3e-c25b-4d11-8af4-a167aeaf9013",
-    "storage_class": "gp2",
+    "storage_class": "glusterfs-storage",
     "bound": "Bound",
     "access_modes": [
       "ReadWriteOnce"
@@ -39,7 +39,7 @@
       "volume.kubernetes.io/selected-node": "ip-10-0-153-152.ec2.internal"
     },
     "uid": "f9187fd8-feb2-4542-a18f-6f41f293a571",
-    "storage_class": "gp2",
+    "storage_class": "glusterfs-storage",
     "bound": "Bound",
     "access_modes": [
       "ReadWriteOnce"
