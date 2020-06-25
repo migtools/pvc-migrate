@@ -21,9 +21,9 @@ pip install openshift=0.11.2   # openshift module for ansible
 pip install PyYAML==5.1.1      # pyyaml module for python
 pip install jmespath==0.10.0   # for json querying from ansible
 
-sudo yum install jq            # jq-1.6 for json processing
-dnf install bind-utils
-dnf install dnsutils
+sudo dnf install jq            # jq-1.6 for json processing
+sudo install bind-utils
+sudo install dnsutils
 ```
 
 ### 3. Set cluster authentication details
