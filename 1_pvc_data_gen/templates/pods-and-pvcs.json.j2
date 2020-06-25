@@ -2,18 +2,19 @@
 
 "pvcs": [
 {% for pvc_list in namespaced_pvcs.results %}
+{% set outer_loop = loop %}
 {% for pvc_resource in pvc_list.resources %}
 {{ pvc_resource | to_nice_json }}
-{{ "" if loop.last else "," }}{% endfor %}
-{{ "" if loop.last else "," }}{% endfor %}
+{{ "" if (loop.last or outer_loop.last) and not  else "," }}{% endfor %}
+{{ "" if (loop.last) else "," }}{% endfor %}
 ],
 
 "pods": [
 {% for pod_list in namespaced_pods.results %}
+{% set outer_loop = loop %}
 {% for pod_resource in pod_list.resources %}
 {{ pod_resource | to_nice_json }}
-{{ "" if loop.last else "," }}{% endfor %}
-{{ "" if loop.last else "," }}{% endfor %}
+{{ "" if (loop.last or outer_loop.last) else "," }}{% endfor %}
+{{ "" if (loop.last) else "," }}{% endfor %}
 ]
-
 }

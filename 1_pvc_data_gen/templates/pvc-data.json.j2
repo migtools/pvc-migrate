@@ -1,5 +1,6 @@
 [
 {% for pvc_list in namespaced_pvcs.results %}
+{% set outer_loop = loop %}
 {% for pvc_resource in pvc_list.resources %}
 {
   "pvc_name" : {{ pvc_resource.metadata.name | to_json }},
@@ -14,6 +15,7 @@
   "node_name":  {{ pvc_resource.metadata.get("annotations", "").get("volume.kubernetes.io/selected-node", "") | to_json }},
   "volume_name": {{ pvc_resource.spec.get("volumeName", "") | to_json }}
 }
-{{ "" if loop.last else "," }}{% endfor %}
-{{ "" if loop.last else "," }}{% endfor %}
+
+{{ "" if (loop.last or outer_loop.last) else "," }}{% endfor %}
+{{ "" if (loop.last) else "," }}{% endfor %}
 ]

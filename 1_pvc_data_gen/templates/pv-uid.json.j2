@@ -1,7 +1,0 @@
-[
-{% for pv_list in pv_content.results %}
-{% for pv_resource in pv_list.resources %}
-{{ pv_resource.metadata.get("uid", "") | to_json }}
-{{ "" if loop.last else "," }}{% endfor %}
-{{ "" if loop.last else "," }}{% endfor %}
-]
