@@ -18,8 +18,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Using this as a workaround to handle empty results
 class EmptyK8sResult:
-    def __dict__(self):
-        return {}
+    __dict__ = {}
 emptyDict = EmptyK8sResult()
 
 if not os.path.exists(script_dir+'/output'):
@@ -40,7 +39,7 @@ for namespace in data['namespaces_to_migrate']:
     v1_namespaces = dyn_client.resources.get(api_version='v1', kind='Namespace')
     try:
         ns = v1_namespaces.get(name=namespace)
-        ns_out = {'namespace': namespace, 'annotations': ns.metadata.annotations.__dict__}
+        ns_out = {'namespace': namespace, 'annotations': ns.metadata.get("annotations", emptyDict).__dict__}
         output.append(ns_out)
     except:
         print("\n[!] v1/namespace not found: " + namespace)
@@ -91,7 +90,7 @@ for namespace in data['namespaces_to_migrate']:
                 'pvc_name': pvc.metadata.name,
                 'pvc_namespace': pvc.metadata.namespace,
                 'capacity': pvc.spec.get("resources",{}).get("requests",{}).get("storage",""),
-                'labels': pvc.metadata.get("labels", emptyDict).__dict__,
+                'labels': pvc.metadata.get("labels",emptyDict).__dict__,
                 'annotations': pvc.metadata.get("annotations",emptyDict).__dict__,
                 'pvc_uid': pvc.metadata.get("uid",""),
                 'storage_class': pvc.spec.get("storageClassName",""),
