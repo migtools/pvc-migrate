@@ -26,7 +26,7 @@ git clone https://github.com/konveyor/pvc-migrate && cd pvc-migrate
 ```
 pip3 install ansible==2.9.7 --user     # ansible 2.9
 pip3 install kubernetes==11.0.0 --user # kubernetes module for ansible
-pip3 install openshift=0.11.2 --user   # openshift module for ansible
+pip3 install openshift==0.11.2 --user   # openshift module for ansible
 pip3 install PyYAML==5.1.1 --user      # pyyaml module for python
 pip3 install jmespath==0.10.0 --user   # for json querying from ansible
 
