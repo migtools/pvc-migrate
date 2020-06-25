@@ -1,6 +1,6 @@
 # Stage 2: pvc-destination-gen
 
-This playbook takes the input from [Stage 1](../1_pvc_data_gen) and create the PVCs in destination cluster
+This playbook takes the input from [Stage 1](../1_pvc_data_gen) and creates PVC OpenShift resources in destination cluster
 
 ## Usage:
 
@@ -20,7 +20,7 @@ ansible-playbook pvc-destination-gen.yml
 4. Verify that PVCs are created on destination
 
 ```
-# export KUBECONFIG=/path/to/destination/kubeconfig
+export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
 oc get pvc -A
 ```
 
