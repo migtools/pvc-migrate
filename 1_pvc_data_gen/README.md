@@ -16,7 +16,7 @@ namespaces_to_migrate:
 - mssql-persistent
 ```
 
-3. Run script while kubeconfig is set for connection to **source cluster**
+3. Run script while KUBECONFIG is set for connection to **source cluster**
 ```
 export KUBECONFIG="/path/to/src_cluster_kubeconfig"
 python3 pvc_data_gen.py 
