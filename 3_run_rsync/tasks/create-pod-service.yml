@@ -59,10 +59,42 @@
 - set_fact:
     mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
     mig_dest_data_location: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
-    mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ pvc_name }}/"
-  #    mig_source_host : get from inventory
-    mig_dest_ssh_key : "{{ rsync_public_key_filepath }}"
+    mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ volume_name }}/"
 
-- name: stub for rsync to run
-#  TODO: @pranavgaikwad
+- delegate_to: "{{ mig_source_host|mandatory }}"
+  vars:
+    mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
+  when: mig_run_sync_phase | bool | d('false')
+  tags:
+  - sync_phase
+  - final_phase
+  block:
+  - name: "Ensure .ssh directory on source node"
+    file:
+      path: "~/.ssh"
+      state: directory
+    become: yes 
 
+  - name: "Copying private key to source node"
+    copy:
+      src: "{{ mig_dest_ssh_key|mandatory }}"
+      dest: "{{ mig_dest_ssh_key_remote_location }}"
+      mode: 0600
+    become: yes
+
+  - name: "Synchronizing files. This may take a while..."
+    shell: "rsync --partial -aPvv {{ mig_source_data_location }} -e 'ssh -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' root@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
+    register: sync_output
+    ignore_errors: yes
+    become: yes
+   
+  - name: "Removing private key from source node"
+    file:
+      path: "{{ mig_dest_ssh_key_remote_location }}"
+      state: absent
+    become: yes
+
+  - when: sync_output.rc != 0
+    fail:
+      msg: "There was an error syncing data across clusters. Please re-run the task with --tags final_phase or --tags sync_phase. The data transfer will begin at the point it previously failed."
+      
