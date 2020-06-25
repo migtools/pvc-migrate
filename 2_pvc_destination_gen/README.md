@@ -13,7 +13,7 @@ cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 
 ```
 mkdir 2_pvc_destination_gen/output
-cp -r 1_pvc_data_gen/output 2_pvc_destination_gen/output
+cp -r 1_pvc_data_gen/output 2_pvc_destination_gen/
 ```
 
 

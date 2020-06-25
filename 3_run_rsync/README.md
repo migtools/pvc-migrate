@@ -13,7 +13,7 @@ cp vars/run-sync.yml.example vars/run-sync.yml
 
 ```
 mkdir 3_run_rsync/output
-cp -r 1_pvc_data_gen/output 3_run_rsync/output
+cp -r 1_pvc_data_gen/output 3_run_rsync/
 ```
 
 
