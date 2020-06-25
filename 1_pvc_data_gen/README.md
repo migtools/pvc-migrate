@@ -45,7 +45,7 @@ cat output/namespace-data.json
 ]
 ```
 
-**output/output/pvc-data.json**
+**output/pvc-data.json**
 ```bash
 cat output/pvc-data.json  
 
