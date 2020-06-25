@@ -1,4 +1,4 @@
-# run_rsync
+# Stage 3: run_rsync
 
 This playbook takes the input from stage 1 and creates a pod for each pvc and mounts it on the pvc. It also creates 
 a LoadBalancer service through which we can run ssh/scp/rsync externally
