@@ -32,8 +32,8 @@
         pvc_name: "{{ item.pvc_name }}"
         pod_name: "{{ pvc_name }}-ssh-rync"
         svc_name: "{{ pod_name }}-ssh"
-        cm_name: "{{ pod_name }}-public-key-cm"
-        public_key: "{{ lookup('file', rsync_public_key_filepath) }}"
+        secret_name: "{{ pod_name }}-public-key"
+        public_key: "{{ lookup('file', rsync_public_key_filepath) | b64encode }}"
       include_tasks: "tasks/create-pod-service.yml"
       with_items: "{{ pvc_data }}"
 

@@ -11,8 +11,9 @@ spec:
     persistentVolumeClaim:
       claimName: {{ pvc_name }}
   - name: public-key
-    configMap:
-      name: {{ cm_name }}
+    secret:
+      secretName: {{ secret_name }}
+      defaultMode: 0600
   containers:
   - name: myapp-container
     image: {{ transfer_pod_image }}
@@ -23,7 +24,8 @@ spec:
     volumeMounts:
     - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
       name: {{ pvc_name }}
-    - mountPath: "/root/.ssh/"
+    - mountPath: "/root/ssl/"
       name: public-key
+      readOnly: true
     securityContext:
       privileged: true

@@ -12,5 +12,5 @@ spec:
     protocol: TCP
     targetPort: ssh
   selector:
-    app: ssh
+    app: {{ pod_name }}
   type: LoadBalancer

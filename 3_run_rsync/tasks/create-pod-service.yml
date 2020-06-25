@@ -1,16 +1,25 @@
 - debug: msg="{{ item }}"
 
-- name: create a configmap for public key
-  k8s:
-    state: present
-    definition:
-      api_version: v1
-      kind: ConfigMap
-      metadata:
-        name: "{{ cm_name }}"
-        namespace: "{{ pvc_namespace }}"
-      data:
-        authorized_keys: "{{ public_key }}"
+# TODO: inject dynamic public key
+# try with poststart hook to get right permissions
+#       lifecycle:
+#          postStart:
+#            exec:
+#              command:
+#                - /bin/sh
+#                - -c
+#                - cp /var/my-app-secrets/id_rsa /var/my-app/id_rsa
+#- name: create a secret for public key
+#  k8s:
+#    state: present
+#    definition:
+#      api_version: v1
+#      kind: Secret
+#      metadata:
+#        name: "{{ secret_name }}"
+#        namespace: "{{ pvc_namespace }}"
+#      data:
+#        authorized_keys: "{{ public_key }}"
 
 - name: create a pod for rsync
   k8s:
