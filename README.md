@@ -5,6 +5,15 @@
 
 `pvc-migrate` automates migration of PersistentVolumeClaims (PVCs) and PersistentVolumes (PVs) from OCP 3.x to OCP 4.x.
 
+
+### Important notes and resources
+
+* The application on the source side needs to be quiesced before attempting migration
+* PVs to be migrated need to be attached with pods, unattached PVs will not be migrated
+* SSH Connection to 3.x Clusters [Instructions to help setup SSH](./docs/inventory-notes.md)
+* Storage Class Selection [Storage Class Instructions](./docs/sc-selection.md)
+* Building an SSH Container image [Container](./2_pvc_destination_gen/extras/)
+
 ## Usage
 ### 1. Clone this git repo
 
