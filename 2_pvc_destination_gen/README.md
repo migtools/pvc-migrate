@@ -9,13 +9,8 @@ This playbook takes the input from stage 1 and create the pvc's in destination c
 cp vars/pvc-destination-gen.yml.example vars/pvc-destination-gen.yml
 cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 ```
-2. copy the output directory from stage 1 to 2_pvc_destination_gen folder
 
-```
-mkdir 2_pvc_destination_gen/output
-cp -r 1_pvc_data_gen/output 2_pvc_destination_gen/
-```
-
+2. Edit storage class mappings in vars files above as needed.
 
 3. Run playbook while kubeconfig is set for connection to **destination cluster**
 ```
