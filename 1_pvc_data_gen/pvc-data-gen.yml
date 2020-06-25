@@ -29,6 +29,27 @@
       template:
         src: namespace-data.json.j2
         dest: output/namespace-data.json      
+    
+    - replace:
+        path: output/namespace-data.json
+        regexp: '[,]{2,}'
+        replace: ','
+
+    - replace:
+        path: output/namespace-data.json
+        regexp: '\,\]'
+        replace: ']'
+
+    - replace:
+        path: output/namespace-data.json
+        regexp: '\,\}'
+        replace: '{'
+
+    - replace:
+        path: output/namespace-data.json
+        regexp: '\[\s,\{'
+        replace: '[{'
+
 
 # -------
 # Write pvc-data.json with immediately accessible PVC data
@@ -52,66 +73,78 @@
       with_items: "{{ namespaces_to_migrate }}"
       register: namespaced_pvcs
 
-    # - name: Read Pods associated with namespaces
-    #   k8s_info:
-    #     kind: Pods
-    #     namespace: "{{ item }}"
-    #     validate_certs: False
-    #   with_items: "{{ namespaces_to_migrate }}"
-    #   register: namespaced_pods
-
-    # - name: Get PVCs attached to pods
-    #   shell: oc get pod -n mssql-persistent -o json | jq -r '.items[] .spec.volumes[] | select(.persistentVolumeClaim) | .persistentVolumeClaim.claimName'
-    #   with_items: "{{ namespaced_pods.results }}"
-    
-      # - name: Create mapping from PVC names names to Pod names`
-        
-
     - name: Render PVCs to output/pvc-data.json
       template:
         src: pvc-data.json.j2
-        dest: output/pvc-data.json      
+        dest: output/pvc-data.json   
+
+    - replace:
+        path: output/pvc-data.json   
+        regexp: '[,]{2,}'
+        replace: ','
+
+    - replace:
+        path: output/pvc-data.json   
+        regexp: '\,\]'
+        replace: ']'
+
+    - replace:
+        path: output/pvc-data.json   
+        regexp: '\,\}'
+        replace: '}'
+
+    - replace:
+        path: output/pvc-data.json
+        regexp: '\[\s,\{'
+        replace: '[{'
 
 # -------
-# # Augment pvc-data.json to include source cluster filepath
-#   - block:
-#     - name: Read pvc-data.json back from rendered file
-#       set_fact:
-#         pvc_data: "{{ lookup('file', 'output/pvc-data.json') | from_json }}"
+# Write pvc-data.json with with addition of bound_pod_uid and bound_pod_name
+# /var/lib/origin/openshift.local.volumes/pods/<pod-UID>/volumes/kubernetes.io~glusterfs/<pvc-name>/
+# Requirements:
+#  - pod_UID (need pod UID associated with PVC)
+#  - pvc_name (we have this)
 
-#     - name: Render PV volumeNames corresponding to PVC list into variable
-#       set_fact:
-#         pv_names: "{{ lookup('template', 'pv-name.json.j2') }}"
+# Build a mapping so we can do lookup given any PVC ns/name to any pod name
+# Easier to do this in Python.
+    - name: Read Pods associated with namespaces
+      k8s_info:
+        kind: Pod
+        namespace: "{{ item }}"
+        validate_certs: False
+      with_items: "{{ namespaces_to_migrate }}"
+      register: namespaced_pods
 
-#     - name: Lookup PVs and extract PV UIDs
-#       k8s_info:
-#         kind: PersistentVolume
-#         name: "{{ item }}"
-#         validate_certs: False
-#       with_items: "{{ pv_names }}"
-#       register: pv_content
+    - name: Render known Pod/PVC info to JSON
+      template:
+        src: pods-and-pvcs.json.j2
+        dest: output/pods-and-pvcs.json   
 
-#     - name: Render list of PV UIDs into variable
-#       set_fact:
-#         pv_uids: "{{ lookup('template', 'pv-uid.json.j2') }}"
-        
-#     - name: Zip together pvc_data with pv_uids
-#       set_fact: 
-#         zipped_pvc_pv_data: "{{ pvc_data | zip(pv_uids) | list }}"
+    - replace:
+        path: output/pods-and-pvcs.json   
+        regexp: '[,]{2,}'
+        replace: ','
 
-#     - name: Render combined PVC and PV info
-#       template:
-#         src: pvc-data-combined.json.j2
-#         dest: output/pvc-data-combined.json      
+    - replace:
+        path: output/pods-and-pvcs.json     
+        regexp: '\,\]'
+        replace: ']'
 
+    - replace:
+        path: output/pods-and-pvcs.json     
+        regexp: '\,\}'
+        replace: '{'
 
-    # - name: Read VolumeNames from PVCs
-    #   k8s_info:
-    #     kind: PersistentVolumeClaim
-    #     namespace: "{{ item }}"
-    #     validate_certs: False
-    #   with_items: "{{ namespaces_to_migrate }}"
-    #   register: namespaced_pvcs
+    - replace:
+        path: output/pods-and-pvcs.json     
+        regexp: '\[\s,\{'
+        replace: '[{'
+    
+    
+    - name: Run add_pod_info_to_pvc.py to add bound Pod info to PVC list
+      shell: python scripts/add_pod_info_to_pvc.py
+
+    
 
 
       
