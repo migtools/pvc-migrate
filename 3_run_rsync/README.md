@@ -5,6 +5,9 @@ a LoadBalancer service through which we can run ssh/scp/rsync externally
 
 ## Usage:
 
+1. Ensure you have followed steps in [https://github.com/konveyor/pvc-migrate/blob/master/docs/inventory-notes.md](inventory-notes.md) 
+   1. Complete SSH Configuration 
+   1. Fill out Ansible Host Inventory
 1. Create your own copy of vars file 
 ```
 cp vars/run-rsync.yml.example vars/run-rsync.yml
