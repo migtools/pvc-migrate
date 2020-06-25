@@ -29,6 +29,7 @@ pip3 install kubernetes==11.0.0 --user  # kubernetes module for ansible
 pip3 install openshift==0.11.2 --user   # openshift module for ansible
 pip3 install PyYAML==5.1.1 --user       # pyyaml module for python
 pip3 install jmespath==0.10.0 --user    # for json querying from ansible
+pip3 install urllib3==1.24.2 --user     # stage 1 requirement
 
 sudo dnf install jq                     # jq-1.6 for json processing
 sudo dnf install bind-utils
