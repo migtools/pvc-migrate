@@ -38,7 +38,7 @@ This final stage launches pods to attach with the PVCs created in the previous s
 - Each PVC is attached to its own dummy pod. The pods have `rsync` and `ssh` installed. 
 - The tooling then uses `rsync` from source side to sync files to the PVs mounted on Pods in the destination side. 
 
-*Note*: This stage __requires__ users to provide node info on the source cluster. Please see notes on [Preparing Inventory For Stage 3](./docs/inventory-notes.md)
+*Note*: This stage __requires__ users to provide node info on the source cluster. Please see notes on [Configuring SSH and Inventory for Stage 3](./docs/inventory-notes.md)
 ---
 
 ## Usage
