@@ -22,6 +22,8 @@ pip install PyYAML==5.1.1      # pyyaml module for python
 pip install jmespath==0.10.0   # for json querying from ansible
 
 sudo yum install jq            # jq-1.6 for json processing
+dnf install bind-utils
+dnf install dnsutils
 ```
 
 ### 3. Set cluster authentication details

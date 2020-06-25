@@ -35,8 +35,15 @@
         volume_name: "{{ item.volume_name }}"
         secret_name: "{{ pod_name }}-public-key"
         bound_pod_uid: "{{ item.bound_pod_uid }}"
+        mig_source_host: "{{ item.node_name }}"
 #        public_key: "{{ lookup('file', rsync_public_key_filepath) | b64encode }}"
       include_tasks: "tasks/create-pod-service.yml"
       with_items: "{{ pvc_data }}"
 
+    - copy:
+        content: "{{ failed_pvcs | to_json }}"
+        dest: "{{ failed_pvcs_filepath }}"
 
+    - copy:
+        content: "{{ successful_pvcs | to_json }}"
+        dest: "{{ successful_pvcs_filepath }}"
