@@ -20,7 +20,6 @@ export IMG=quay.io/<repository>/<container_name>:<tag>
 docker build --build-arg sshkey=<SSH_KEY_FILE_NAME> -t $IMG -f Dockerfile .
 ```
 
-Note that 
 # Deploy container
 
 To deploy pod with the SSH container image on OpenShift cluster :
