@@ -89,6 +89,24 @@ for namespace in data['namespaces_to_migrate']:
         if nodeName != "":
             node_list.append({'name': nodeName})
 
+        # Change Read-Only-Many access mode to Read-Write-Many
+        access_modes = pvc.spec.get("accessModes", "[]")
+        try:
+            rox_idx = access_modes.index("ReadOnlyMany")
+            access_modes[rox_idx] = "ReadWriteMany"
+            # Dedupe "ReadOnlyMany"
+            access_modes_deduped = []
+            for mode in access_modes:
+                if mode not in access_modes_deduped:
+                    access_modes_deduped.append(mode)
+            # Set revised Access Modes list
+            access_modes = access_modes_deduped
+            
+        # Exception will fire if "ReadOnlyMany" not found
+        except:
+            pass
+        
+
         # Build pvc-data.json data structure
         pvc_out = {
                 'pvc_name': pvc.metadata.name,
