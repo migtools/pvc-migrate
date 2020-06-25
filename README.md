@@ -72,10 +72,9 @@ This final stage launches pods to attach with the PVCs created in the previous s
 
 
 ### 6. Running the PVC migration
-   1. Run `./migrate_pvc_data.sh` to start the **3 stages** that will migrate PV/PVC data in selected namespaces
-   2. Upon successful completion, namespaces you selected will have been created on the *destination cluster* and PV/PVC data from the *source cluster* will have been copied over with *RSync*. 
-   3. The list of migrated PVCs are visible in `output/pvc-data.json` 
-   4. Stages can be re-run by commenting out lines in `migrate_pvc_data.sh`
+1. Follow stage 1 instructions in [1_pvc_data_gen/README.md](1_pvc_data_gen/README.md
+1. Follow stage 2 instructions in [2_pvc_destination_gen](2_pvc_destination_gen/README.md)
+1. Follow stage 3 instructions in [3_run_rsync/README.md](3_run_rsync/README.md)
    
    
 ### 7. Run CAM in "no PVC migration" mode
