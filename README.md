@@ -20,6 +20,7 @@ pip install PyYAML==5.1.1      # pyyaml module for python
 pip install jmespath==0.10.0   # for json querying from ansible
 
 sudo yum install jq            # jq-1.6 for json processing
+dnf install bind-utils
 ```
 
 3. **Copy source and target cluster KUBECONFIG files authenticated with  *cluster-admin* privileges to `auth` directory**

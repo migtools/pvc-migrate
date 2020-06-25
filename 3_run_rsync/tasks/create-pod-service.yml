@@ -60,6 +60,7 @@
     mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
     mig_dest_data_location: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
     mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ volume_name }}/"
+    failed_pvcs: []
 
 - delegate_to: "{{ mig_source_host|mandatory }}"
   vars:
@@ -82,21 +83,37 @@
       mode: 0600
     become: yes
 
+  - name: wait for dns
+    shell: "dig {{ mig_dest_service_url }}"
+    register: dig_output
+    until: dig_output.rc == 0
+    retries: 100
+    delay: 3
+
   - name: "Synchronizing files. This may take a while..."
     shell: "rsync --partial -aPvv {{ mig_source_data_location }} -e 'ssh -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' root@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
     register: sync_output
     ignore_errors: yes
     become: yes
+
+  - name: collect failed pvcs
+    vars:
+      failed_pvc:
+        - name: "{{ pvc_name }}"
+          namespace: "{{ pvc_namespace }}"
+    set_fact:
+      failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
+    when: sync_output.rc != 0
    
   - name: "Removing private key from source node"
     file:
       path: "{{ mig_dest_ssh_key_remote_location }}"
       state: absent
     become: yes
-
-  - when: sync_output.rc != 0
-    fail:
-      msg: "There was an error syncing data across clusters. Please re-run the task with --tags final_phase or --tags sync_phase. The data transfer will begin at the point it previously failed."
+#
+#  - when: sync_output.rc != 0
+#    fail:
+#      msg: "There was an error syncing data across clusters. Please re-run the task with --tags final_phase or --tags sync_phase. The data transfer will begin at the point it previously failed."
 
 
 - name: cleanup the transfer pod for rsync
@@ -120,7 +137,7 @@
     state: absent
     definition: "{{ lookup('template', 'svc.yml.j2') }}"
 
-- name: wait for pod to be deleted
+- name: wait for service to be deleted
   k8s_info:
     api_version: v1
     kind: service
