@@ -4,6 +4,8 @@ This playbook scans source cluster PVCs in a `namespaces_to_migrate` list provid
 
 ## Usage:
 
+1. Before running stage 1, ensure you have completed [prerequisite steps](https://github.com/konveyor/pvc-migrate#prerequisite-steps) and have installed required [automation prerequisites](https://github.com/konveyor/pvc-migrate#2-automation-prerequisites).
+
 1. Create your own copy of vars file 
 ```
 cp vars/pvc-data-gen.yml.example vars/pvc-data-gen.yml
