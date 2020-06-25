@@ -3,12 +3,15 @@
 #    mig_source_data_location : Mount point on source side
 #    mig_dest_data_location : Mount point on destination side
 #    mig_source_host : IP address to connect to
+#    mig_dest_ssh_key : SSH key to connect to destination
 #
 #  Output : 
 #    zero     :  if successful transfer 
 #    non-zero :  if unsuccessful transfer
 
 - hosts: "{{ mig_source_host }}"
+  vars:
+    mig_dest_ssh_key_remote_location: "~/.ssh/dest"
   tasks:
   - name: "Ensure .ssh dir"
     file:
@@ -17,26 +20,14 @@
 
   - name: "Copying private key to source"
     copy:
-      src: "{{ mig_source_ssh_key }}"
-      dest: "~/.ssh/id.github"
+      src: "{{ mig_dest_ssh_key }}"
+      dest: "{{ mig_dest_ssh_key_remote_location }}"
       mode: "0600"
     
   - name: "Running transfer"
-    shell: "rsync -aPvv {{ mig_source_data_location }} -e 'ssh -o StrictHostKeyChecking=no -i ~/.ssh/id.github' root@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
+    shell: "rsync --partial -aPvv {{ mig_source_data_location }} -e 'ssh -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' root@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
 
   - name: "Removing private key from source"
     file:
       state: absent
-      path: /root/.ssh/id.github
-
-#  - name: "Transferring data from source to destination"
-#    synchronize:
-#      src: "{{ mig_source_data_location | mandatory }}"
-#      dest: "rsync://{{ mig_dest_service_url | mandatory }}{{ mig_dest_data_location | mandatory }}"
-#      archive: yes
-#      verify_host: false
-#      mode: push
-#      private_key: "/home/pranav/.ssh/id.github"
-#    delegate_to: "{{ mig_source_host | mandatory }}"
-#    remote_user: root
-#    register: mig_transfer_status
+      path: "{{ mig_dest_ssh_key_remote_location }}"
