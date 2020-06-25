@@ -38,7 +38,20 @@ ssh_args = -F ${HOME}/.ssh/config -o ControlMaster=auto -o ControlPersist=5m
 control_path = ${HOME}/.ssh/ansible-%%r@%%h:%%p
 ```
 
-## Running synchronization phase
+## Synchronization
+
+```sh
+#  Input :
+#    mig_dest_service_url : SSH Tunnel endpoint on destination
+#    mig_source_data_location : Mount point on source side
+#    mig_dest_data_location : Mount point on destination side
+#    mig_source_host : IP address to connect to
+#
+#  Output :
+#    zero     :  if successful transfer
+#    non-zero :  if unsuccessful transfer
+```
+
 
 In progress...
   
