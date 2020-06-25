@@ -29,6 +29,27 @@
       template:
         src: namespace-data.json.j2
         dest: output/namespace-data.json      
+    
+    - replace:
+        path: output/namespace-data.json
+        regexp: '[,]{2,}'
+        replace: ','
+
+    - replace:
+        path: output/namespace-data.json
+        regexp: '\,\]'
+        replace: ']'
+
+    - replace:
+        path: output/namespace-data.json
+        regexp: '\,\}'
+        replace: '{'
+
+    - replace:
+        path: output/namespace-data.json
+        regexp: '\[\s,\{'
+        replace: '[{'
+
 
 # -------
 # Write pvc-data.json with immediately accessible PVC data
@@ -57,6 +78,26 @@
         src: pvc-data.json.j2
         dest: output/pvc-data.json   
 
+    - replace:
+        path: output/pvc-data.json   
+        regexp: '[,]{2,}'
+        replace: ','
+
+    - replace:
+        path: output/pvc-data.json   
+        regexp: '\,\]'
+        replace: ']'
+
+    - replace:
+        path: output/pvc-data.json   
+        regexp: '\,\}'
+        replace: '}'
+
+    - replace:
+        path: output/pvc-data.json
+        regexp: '\[\s,\{'
+        replace: '[{'
+
 # -------
 # Write pvc-data.json with with addition of bound_pod_uid and bound_pod_name
 # /var/lib/origin/openshift.local.volumes/pods/<pod-UID>/volumes/kubernetes.io~glusterfs/<pvc-name>/
@@ -78,6 +119,27 @@
       template:
         src: pods-and-pvcs.json.j2
         dest: output/pods-and-pvcs.json   
+
+    - replace:
+        path: output/pods-and-pvcs.json   
+        regexp: '[,]{2,}'
+        replace: ','
+
+    - replace:
+        path: output/pods-and-pvcs.json     
+        regexp: '\,\]'
+        replace: ']'
+
+    - replace:
+        path: output/pods-and-pvcs.json     
+        regexp: '\,\}'
+        replace: '{'
+
+    - replace:
+        path: output/pods-and-pvcs.json     
+        regexp: '\[\s,\{'
+        replace: '[{'
+    
     
     - name: Run add_pod_info_to_pvc.py to add bound Pod info to PVC list
       shell: python scripts/add_pod_info_to_pvc.py

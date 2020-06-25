@@ -16,6 +16,5 @@
   "volume_name": {{ pvc_resource.spec.get("volumeName", "") | to_json }}
 }
 
-{{ "" if (loop.last or outer_loop.last) else "," }}{% endfor %}
-{{ "" if (loop.last) else "," }}{% endfor %}
+,{% endfor %},{% endfor %}
 ]
