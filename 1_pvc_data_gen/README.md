@@ -19,7 +19,7 @@ namespaces_to_migrate:
 3. Run script while kubeconfig is set for connection to **source cluster**
 ```
 export KUBECONFIG="/path/to/src_cluster_kubeconfig"
-python pvc_data_gen.py 
+python3 pvc_data_gen.py 
 ```
 
 4. Examine generated output
