@@ -1,6 +1,6 @@
 # Stage 2: pvc-destination-gen
 
-This playbook takes the input from [stage 1](../1_pvc_data_gen) and create the PVCs in destination cluster
+This playbook takes the input from [Stage 1](../1_pvc_data_gen) and create the PVCs in destination cluster
 
 ## Usage:
 
@@ -24,4 +24,4 @@ ansible-playbook pvc-destination-gen.yml
 oc get pvc -A
 ```
 
-5. Move on to [stage 3](../3_run_rsync)
+5. Move on to [Stage 3](../3_run_rsync)
