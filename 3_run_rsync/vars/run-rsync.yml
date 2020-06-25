@@ -1,4 +1,4 @@
-pvc_data_filepath: output/pvc-data.json
-namespace_data_filepath: output/namespace-data.json
+pvc_data_filepath: ../output/pvc-data.json
+namespace_data_filepath: ../output/namespace-data.json
 transfer_pod_image: quay.io/pranavgaikwad/ssh-centos:latest
 rsync_public_key_filepath: /tmp/ssl/public/rsync-pod-public.pub
