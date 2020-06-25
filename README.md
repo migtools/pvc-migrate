@@ -13,10 +13,13 @@ git clone https://github.com/konveyor/pvc-migrate && cd pvc-migrate
 2. **Install prerequisites**
 
 ```
-pip install ansible    # ansible 2.9 
-pip install kubernetes # kubernetes module for ansible
-pip install openshift  # openshift module for ansible
-sudo yum install jq    # jq for json processing
+pip install ansible==2.9.7     # ansible 2.9
+pip install kubernetes==11.0.0 # kubernetes module for ansible
+pip install openshift=0.11.2   # openshift module for ansible
+pip install PyYAML==5.1.1      # pyyaml module for python
+pip install jmespath==0.10.0   # for json querying from ansible
+
+sudo yum install jq            # jq-1.6 for json processing
 ```
 
 3. **Copy source and target cluster KUBECONFIG files authenticated with  *cluster-admin* privileges to `auth` directory**
