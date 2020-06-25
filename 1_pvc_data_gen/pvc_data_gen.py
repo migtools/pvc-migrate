@@ -7,10 +7,20 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from kubernetes import client, config
 from openshift.dynamic import DynamicClient
 
-k8s_client = config.new_client_from_config()
-dyn_client = DynamicClient(k8s_client)
+try:
+    k8s_client = config.new_client_from_config()
+    dyn_client = DynamicClient(k8s_client)
+except: 
+    print("Failed while setting up OpenShift client. Ensure KUBECONFIG is set.")
+    exit(1)
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Using this as a workaround to handle empty results
+class EmptyK8sResult:
+    def __dict__(self):
+        return {}
+emptyDict = EmptyK8sResult()
 
 if not os.path.exists(script_dir+'/output'):
     os.makedirs(script_dir+'/output')
@@ -22,6 +32,8 @@ with open(script_dir+'/vars/pvc-data-gen.yml') as f:
 node_list = []
 output = []
 
+print("Running stage 1 data processing on namespaces: {}".format(data['namespaces_to_migrate']))
+
 # Generate data for namespace-data.json
 for namespace in data['namespaces_to_migrate']:
     v1_namespaces = dyn_client.resources.get(api_version='v1', kind='Namespace')
@@ -30,7 +42,7 @@ for namespace in data['namespaces_to_migrate']:
         ns_out = {'namespace': namespace, 'annotations': ns.metadata.annotations.__dict__}
         output.append(ns_out)
     except:
-        print("Error while getting v1/namespace: " + namespace)
+        print("v1/namespace not found: " + namespace)
     
 
 with open(script_dir+'/output/namespace-data.json', 'w') as f:
@@ -75,9 +87,9 @@ for namespace in data['namespaces_to_migrate']:
         pvc_out = {
                 'pvc_name': pvc.metadata.name,
                 'pvc_namespace': pvc.metadata.namespace,
-                'capacity': pvc.spec.get("resources",{}).get("requests",{}).get("storage",{}),
-                'labels': pvc.metadata.get("labels", {}).__dict__,
-                'annotations': pvc.metadata.get("annotations",{}).__dict__,
+                'capacity': pvc.spec.get("resources",{}).get("requests",{}).get("storage",""),
+                'labels': pvc.metadata.get("labels", emptyDict).__dict__,
+                'annotations': pvc.metadata.get("annotations",emptyDict).__dict__,
                 'pvc_uid': pvc.metadata.get("uid",""),
                 'storage_class': pvc.spec.get("storageClassName",""),
                 'bound': pvc.status.get("phase",""),
