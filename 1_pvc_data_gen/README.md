@@ -16,32 +16,42 @@ namespaces_to_migrate:
 - mssql-persistent
 ```
 
-3. Run playbook while kubeconfig is set for connection to **source cluster**
+3. Run script while kubeconfig is set for connection to **source cluster**
 ```
 export KUBECONFIG="/path/to/src_cluster_kubeconfig"
-ansible-playbook pvc-data-gen.yml
+python pvc_data_gen.py 
 ```
 
 4. Examine generated output
 
 
+**output/node-list.json**
+```bash
+cat output/node-list.json
+[
+    {
+        "name": "ip-10-0-138-112.ec2.internal"
+    }
+]
+```
+
 **output/namespace-data.json**
 ```bash
 cat output/namespace-data.json
 [
-{
-  "namespace": "rocket-chat",
-  "annotations": {
-    "openshift.io/backup-registry-hostname": "docker-registry.default.svc:5000",
-    "openshift.io/backup-server-version": "1.11",
-    "openshift.io/description": "",
-    "openshift.io/display-name": "",
-    "openshift.io/requester": "opentlc-mgr",
-    "openshift.io/sa.scc.mcs": "s0:c9,c4",
-    "openshift.io/sa.scc.supplemental-groups": "1000080000/10000",
-    "openshift.io/sa.scc.uid-range": "1000080000/10000"
-}
-}
+    {
+        "namespace": "rocket-chat",
+        "annotations": {
+            "openshift.io/backup-registry-hostname": "docker-registry.default.svc:5000",
+            "openshift.io/backup-server-version": "1.11",
+            "openshift.io/description": "",
+            "openshift.io/display-name": "",
+            "openshift.io/requester": "opentlc-mgr",
+            "openshift.io/sa.scc.mcs": "s0:c9,c4",
+            "openshift.io/sa.scc.supplemental-groups": "1000080000/10000",
+            "openshift.io/sa.scc.uid-range": "1000080000/10000"
+        }
+    }
 ]
 ```
 
