@@ -12,7 +12,7 @@
 * PVs to be migrated need to be attached with pods, unattached PVs will not be migrated
 * SSH Connection to 3.x Clusters [Instructions to help setup SSH](./docs/inventory-notes.md)
 * Storage Class Selection [Storage Class Instructions](./docs/sc-selection.md)
-* Building an SSH Container image [Container](./2_pvc_destination_gen/extras/)
+* Building an SSH Container image [Container](./2_pvc_destination_gen/extras/container)
 
 ## Usage
 ### 1. Clone this git repo
