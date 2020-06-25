@@ -25,7 +25,7 @@ sudo yum install jq    # jq for json processing
    1. Copy target cluster kubeconfig to `auth/KUBECONFIG_TARGET`
    
 4. **Set list of namespaces to migrate PV/PVC data for**
-   1. Copy sample config file as starting point: `cp 1_pvc_data_gen/vars/pvc-data-gen.yml.example pvc-data-gen.yml`
+   1. Copy sample config file as starting point: `cp 1_pvc_data_gen/vars/pvc-data-gen.yml.example 1_pvc_data_gen/vars/pvc-data-gen.yml`
    1. Edit `1_pvc_data_gen/vars/pvc-data-gen.yml`, adding list of namespaces for which PV/PVC data should be migrated
    
 ```
