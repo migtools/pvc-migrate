@@ -22,7 +22,11 @@ export KUBECONFIG="/path/to/src_cluster_kubeconfig"
 python3 pvc_data_gen.py 
 ```
 
-4. Examine generated output
+4. Move on to [Stage 2](../2_pvc_destination_gen)
+
+---
+
+Sample generated output
 
 
 **output/node-list.json**
