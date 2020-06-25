@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   annotations: {{ item.annotations }}
-  name: {{ item.name }}
+  name: {{ item.namespace }}
 spec:
   finalizers:
   - kubernetes
