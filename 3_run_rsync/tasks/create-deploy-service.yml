@@ -1,30 +1,10 @@
-- debug: msg="{{ item }}"
+- debug:
+    msg: "{{ item }}"
 
-# TODO: inject dynamic public key
-# try with poststart hook to get right permissions
-#       lifecycle:
-#          postStart:
-#            exec:
-#              command:
-#                - /bin/sh
-#                - -c
-#                - cp /var/my-app-secrets/id_rsa /var/my-app/id_rsa
-#- name: create a secret for public key
-#  k8s:
-#    state: present
-#    definition:
-#      api_version: v1
-#      kind: Secret
-#      metadata:
-#        name: "{{ secret_name }}"
-#        namespace: "{{ pvc_namespace }}"
-#      data:
-#        authorized_keys: "{{ public_key }}"
-
-- name: create a pod for rsync
+- name: create a deployment for rsync
   k8s:
     state: present
-    definition: "{{ lookup('template', 'pod.yml.j2') }}"
+    definition: "{{ lookup('template', 'deploy.yml.j2') }}"
 
 - name: create a service for rsync
   k8s:
@@ -35,8 +15,9 @@
   k8s_info:
     api_version: v1
     kind: pod
-    name: "{{ pod_name }}"
     namespace: "{{ pvc_namespace }}"
+    label_selectors:
+      - "app={{ pod_name }}"
   register: pod
   until: "true in (pod | json_query('resources[].status.containerStatuses[].ready'))"
   retries: 100
@@ -114,29 +95,25 @@
     set_fact:
       successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
     when: sync_output.rc == 0
-   
+
   - name: "Removing private key from source node"
     file:
       path: "{{ mig_dest_ssh_key_remote_location }}"
       state: absent
     become: yes
-#
-#  - when: sync_output.rc != 0
-#    fail:
-#      msg: "There was an error syncing data across clusters. Please re-run the task with --tags final_phase or --tags sync_phase. The data transfer will begin at the point it previously failed."
-
 
 - name: cleanup the transfer pod for rsync
   k8s:
     state: absent
-    definition: "{{ lookup('template', 'pod.yml.j2') }}"
+    definition: "{{ lookup('template', 'deploy.yml.j2') }}"
 
 - name: wait for pod to be deleted
   k8s_info:
     api_version: v1
     kind: pod
-    name: "{{ pod_name }}"
     namespace: "{{ pvc_namespace }}"
+    label_selectors:
+      - "app={{ pod_name }}"
   register: p
   until: "{{ p.resources | length == 0 }}"
   retries: 100

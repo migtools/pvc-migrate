@@ -26,7 +26,7 @@
           namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
 
 
-    - name: create pod and service
+    - name: create deployment and service
       vars:
         pvc_namespace: "{{ item.pvc_namespace }}"
         pvc_name: "{{ item.pvc_name }}"
@@ -36,8 +36,7 @@
         secret_name: "{{ pod_name }}-public-key"
         bound_pod_uid: "{{ item.bound_pod_uid }}"
         mig_source_host: "{{ item.node_name }}"
-#        public_key: "{{ lookup('file', rsync_public_key_filepath) | b64encode }}"
-      include_tasks: "tasks/create-pod-service.yml"
+      include_tasks: "tasks/create-deploy-service.yml"
       with_items: "{{ pvc_data }}"
 
     - copy:
