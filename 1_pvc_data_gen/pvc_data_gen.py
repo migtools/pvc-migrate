@@ -69,6 +69,7 @@ for namespace in data['namespaces_to_migrate']:
         pvc_pod = None
         boundPodName = ''
         boundPodUid = ''
+        boundPodMountPath = ''
         nodeName = ''
         for pod in pod_list.items:
             volumes = pod.spec.get('volumes', "")
@@ -77,6 +78,16 @@ for namespace in data['namespaces_to_migrate']:
             for volume in volumes:
                 if volume.get('persistentVolumeClaim', {}).get('claimName', '') == pvc.metadata.name:
                     pvc_pod = pod.__dict__
+                    # We need volumes[].name to get the mountPath, (mssql-vol)
+                    vol_name = volume.get('name', "")
+                    # Next, search through list of containers on podSpec to find one with a volumeMount we want
+                    for container in pod.spec.get('containers', "[]"):
+                        vol_mounts = container.get('volumeMounts', [])
+                        for vol_mount in vol_mounts:
+                            if vol_mount.get("name", "") == vol_name:
+                                boundPodMountPath = vol_mount.get("mountPath", "")
+                                break
+
                     break
             if pvc_pod != None:
                 break
@@ -124,7 +135,8 @@ for namespace in data['namespaces_to_migrate']:
                 'node_name': nodeName,
                 'volume_name': pvc.spec.get("volumeName",""),
                 'bound_pod_name': boundPodName,
-                'bound_pod_uid': boundPodUid
+                'bound_pod_uid': boundPodUid,
+                'bound_pod_mount_path': boundPodMountPath
         }
         output.append(pvc_out)
     
