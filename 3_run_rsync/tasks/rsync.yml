@@ -50,6 +50,7 @@
     become: yes
 
   - name: collect failed pvcs
+    delegate_to: localhost
     vars:
       failed_pvc:
         - name: "{{ pvc_name }}"
@@ -59,6 +60,7 @@
     when: sync_output.rc != 0
 
   - name: collect successful pvcs
+    delegate_to: localhost
     vars:
       successful_pvc:
         - name: "{{ pvc_name }}"
