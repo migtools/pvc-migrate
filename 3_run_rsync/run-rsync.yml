@@ -35,11 +35,3 @@
 #        public_key: "{{ lookup('file', rsync_public_key_filepath) | b64encode }}"
       include_tasks: "tasks/create-pod-service.yml"
       with_items: "{{ pvc_data }}"
-
-    - copy:
-        content: "{{ failed_pvcs | to_json }}"
-        dest: "{{ failed_pvcs_dir }}/{{ pvc_namespace }}.json"
-
-    - copy:
-        content: "{{ successful_pvcs | to_json }}"
-        dest: "{{ successful_pvcs_filepath }}/{{ pvc_namespace }}.json"

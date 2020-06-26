@@ -118,3 +118,12 @@
   until: "{{ s.resources | length == 0 }}"
   retries: 100
   delay: 3
+
+
+- copy:
+    content: "{{ failed_pvcs | to_json }}"
+    dest: "{{ failed_pvcs_dir }}/{{ pvc_namespace }}.json"
+
+- copy:
+    content: "{{ successful_pvcs | to_json }}"
+    dest: "{{ successful_pvcs_filepath }}/{{ pvc_namespace }}.json"
