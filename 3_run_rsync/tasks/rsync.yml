@@ -53,7 +53,7 @@
     vars:
       failed_pvc:
         - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_namespace }}"
+          namespace: "{{ pvc_ns }}"
     set_fact:
       failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
     when: sync_output.rc != 0
@@ -62,7 +62,7 @@
     vars:
       successful_pvc:
         - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_namespace }}"
+          namespace: "{{ pvc_ns }}"
     set_fact:
       successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
     when: sync_output.rc == 0
