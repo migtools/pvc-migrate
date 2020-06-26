@@ -1,3 +1,15 @@
+# vars this task expects
+#        pvc_namespace: "{{ item.pvc_namespace }}"
+#        pvc_name: "{{ item.pvc_name }}"
+#        pod_name: "{{ pvc_name }}-ssh-rync"
+#        svc_name: "{{ pvc_namespace }}-ssh"
+#        volume_name: "{{ item.volume_name }}"
+#        secret_name: "{{ pod_name }}-public-key"
+#        bound_pod_uid: "{{ item.bound_pod_uid }}"
+#        mig_source_host: "{{ item.node_name }}"
+
+
+
 - debug: msg="{{ item }}"
 
 # TODO: inject dynamic public key
@@ -20,7 +32,9 @@
 #        namespace: "{{ pvc_namespace }}"
 #      data:
 #        authorized_keys: "{{ public_key }}"
-
+#
+####
+- debug: msg="{{ lookup('template', 'pod.yml.j2') }}"
 - name: create a pod for rsync
   k8s:
     state: present
@@ -56,71 +70,18 @@
   retries: 100
   delay: 3
 
-- set_fact:
-    mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
-    mig_dest_data_location: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
-    mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ volume_name }}/"
+- name: run rsync for pvc synchronously
+  vars:
+    pvc_ns: "{{ item.pvc_namespace }}"
+    pvc_name: "{{ item.pvc_name }}"
+    volume_name: "{{ item.pvc_name }}"
+    bound_pod_uid: "{{ item.bound_pod_uid }}"
+    node_name: "{{ item.node_name }}"
     failed_pvcs: []
     successful_pvcs: []
+  include_tasks: "tasks/rsync.yml"
+  with_items: "{{ pvcs }}"
 
-- delegate_to: "{{ mig_source_host|mandatory }}"
-  vars:
-    mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
-  when: mig_run_sync_phase | bool | d('false')
-  tags:
-  - sync_phase
-  - final_phase
-  block:
-  - name: "Ensure .ssh directory on source node"
-    file:
-      path: "~/.ssh"
-      state: directory
-    become: yes
-
-  - name: "Copying private key to source node"
-    copy:
-      src: "{{ mig_dest_ssh_key|mandatory }}"
-      dest: "{{ mig_dest_ssh_key_remote_location }}"
-      mode: 0600
-    become: yes
-
-  - name: wait for dns
-    shell: "nslookup {{ mig_dest_service_url }}"
-    register: dig_output
-    until: dig_output.rc == 0
-    retries: 100
-    delay: 3
-
-  - name: "Synchronizing files. This may take a while..."
-    shell: "rsync --partial -aPvv {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' ssh@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
-    register: sync_output
-    ignore_errors: yes
-    become: yes
-
-  - name: collect failed pvcs
-    vars:
-      failed_pvc:
-        - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_namespace }}"
-    set_fact:
-      failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
-    when: sync_output.rc != 0
-
-  - name: collect successful pvcs
-    vars:
-      successful_pvc:
-        - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_namespace }}"
-    set_fact:
-      successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
-    when: sync_output.rc == 0
-   
-  - name: "Removing private key from source node"
-    file:
-      path: "{{ mig_dest_ssh_key_remote_location }}"
-      state: absent
-    become: yes
-#
 #  - when: sync_output.rc != 0
 #    fail:
 #      msg: "There was an error syncing data across clusters. Please re-run the task with --tags final_phase or --tags sync_phase. The data transfer will begin at the point it previously failed."
