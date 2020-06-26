@@ -94,6 +94,7 @@ cat output/pvc-data.json
         "volume_name": "pvc-66b89c3e-c25b-4d11-8af4-a167aeaf9013",
         "bound_pod_name": "rocketchat-db-1-2thf7",
         "bound_pod_uid": "fb246b11-f946-48f1-a6e2-3e2b92acbbb1"
+        "bound_pod_mount_path": "/var/opt/rocketchat/data"
     }
 ]
 ```
