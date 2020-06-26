@@ -70,6 +70,7 @@ for namespace in data['namespaces_to_migrate']:
         boundPodName = ''
         boundPodUid = ''
         boundPodMountPath = ''
+        boundPodMountContainerName = ''
         nodeName = ''
         for pod in pod_list.items:
             volumes = pod.spec.get('volumes', "")
@@ -86,7 +87,9 @@ for namespace in data['namespaces_to_migrate']:
                         for vol_mount in vol_mounts:
                             if vol_mount.get("name", "") == vol_name:
                                 boundPodMountPath = vol_mount.get("mountPath", "")
+                                boundPodMountContainerName = container.get('name', "")
                                 break
+
 
                     break
             if pvc_pod != None:
@@ -136,7 +139,8 @@ for namespace in data['namespaces_to_migrate']:
                 'volume_name': pvc.spec.get("volumeName",""),
                 'bound_pod_name': boundPodName,
                 'bound_pod_uid': boundPodUid,
-                'bound_pod_mount_path': boundPodMountPath
+                'bound_pod_mount_path': boundPodMountPath,
+                'bound_pod_mount_container_name': boundPodMountContainerName
         }
         output.append(pvc_out)
     
