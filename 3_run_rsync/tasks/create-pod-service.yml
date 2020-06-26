@@ -70,6 +70,10 @@
   retries: 100
   delay: 3
 
+- set_fact:
+    failed_pvcs: []
+    successful_pvcs: []
+
 - name: run rsync for pvc synchronously
   vars:
     pvc_ns: "{{ item.pvc_namespace }}"
@@ -77,8 +81,6 @@
     volume_name: "{{ item.pvc_name }}"
     bound_pod_uid: "{{ item.bound_pod_uid }}"
     node_name: "{{ item.node_name }}"
-    failed_pvcs: []
-    successful_pvcs: []
   include_tasks: "tasks/rsync.yml"
   with_items: "{{ pvcs }}"
 
@@ -119,11 +121,12 @@
   retries: 100
   delay: 3
 
+- debug: msg="{{ failed_pvcs }} {{ successful_pvcs }}"
 
 - copy:
     content: "{{ failed_pvcs | to_json }}"
-    dest: "{{ failed_pvcs_dir }}/{{ pvc_namespace }}.json"
+    dest: "{{ failed_pvcs_dir }}/{{ pvc_namespace }}-failed.json"
 
 - copy:
     content: "{{ successful_pvcs | to_json }}"
-    dest: "{{ successful_pvcs_filepath }}/{{ pvc_namespace }}.json"
+    dest: "{{ successful_pvcs_dir }}/{{ pvc_namespace }}-successful.json"
