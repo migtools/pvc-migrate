@@ -91,6 +91,8 @@ for namespace in data['namespaces_to_migrate']:
 
         # Change Read-Only-Many access mode to Read-Write-Many
         access_modes = pvc.spec.get("accessModes", "[]")
+        pvc_labels = pvc.metadata.get("labels",emptyDict).__dict__
+
         try:
             rox_idx = access_modes.index("ReadOnlyMany")
             access_modes[rox_idx] = "ReadWriteMany"
@@ -101,7 +103,8 @@ for namespace in data['namespaces_to_migrate']:
                     access_modes_deduped.append(mode)
             # Set revised Access Modes list
             access_modes = access_modes_deduped
-            
+            # Apply new label indicating access mode was replaced
+            pvc_labels["cam-migration-removed-access-mode"] = "ReadOnlyMany"
         # Exception will fire if "ReadOnlyMany" not found
         except:
             pass
@@ -112,12 +115,12 @@ for namespace in data['namespaces_to_migrate']:
                 'pvc_name': pvc.metadata.name,
                 'pvc_namespace': pvc.metadata.namespace,
                 'capacity': pvc.spec.get("resources",{}).get("requests",{}).get("storage",""),
-                'labels': pvc.metadata.get("labels",emptyDict).__dict__,
+                'labels': pvc_labels,
                 'annotations': pvc.metadata.get("annotations",emptyDict).__dict__,
                 'pvc_uid': pvc.metadata.get("uid",""),
                 'storage_class': pvc.spec.get("storageClassName",""),
                 'bound': pvc.status.get("phase",""),
-                'access_modes': pvc.spec.get("accessModes", ""),
+                'access_modes': access_modes,
                 'node_name': nodeName,
                 'volume_name': pvc.spec.get("volumeName",""),
                 'bound_pod_name': boundPodName,
