@@ -19,10 +19,11 @@ if [ x"$USER_ID" != x"0" -a x"$USER_ID" != x"1001" ]; then
     LD_PRELOAD=/usr/lib64/libnss_wrapper.so
     export LD_PRELOAD
 fi
-ssh-keygen -A 
-mv /etc/ssh/ssh_host_* /opt/ssh/
-mv /etc/ssh/sshd_config /opt/ssh
-mv /etc/ssh/moduli /opt/ssh
+
+ssh-keygen -A
+cp /etc/ssh/ssh_host_* /opt/ssh/
+cp /etc/ssh/sshd_config /opt/ssh
+cp /etc/ssh/moduli /opt/ssh
 sed -i "s/UsePAM yes/UsePAM no/" /opt/ssh/sshd_config
 chown -R ssh:ssh /opt/ssh
 
