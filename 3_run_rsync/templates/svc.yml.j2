@@ -13,4 +13,21 @@ spec:
     targetPort: 2222
   selector:
     app: {{ pod_name }}
-  type: LoadBalancer
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: {{ pod_name }}
+  name: {{ route_name }}
+  namespace: {{ pvc_namespace }}
+spec:
+  port:
+    targetPort: 2222
+  to:
+    kind: Service
+    name: {{ svc_name }}
+    weight: 100
+  wildcardPolicy: None

@@ -50,14 +50,26 @@
     namespace: "{{ pvc_namespace }}"
   register: svc
   until: " svc.resources is defined
-            and svc.resources[0].status is defined
-            and svc.resources[0].status.loadBalancer is defined
-            and svc.resources[0].status.loadBalancer.ingress is defined"
+            and svc.resources[0].spec is defined
+            and svc.resources[0].spec.clusterIP is defined"
+  retries: 100
+  delay: 3
+
+- name: wait for svc to get a load balancer IP
+  k8s_facts:
+    api_version: route.openshift.io/v1
+    kind: route
+    name: "{{ route_name }}"
+    namespace: "{{ pvc_namespace }}"
+  register: rsync_route
+  until: " rsync_route.resources is defined
+            and rsync_route.resources[0].spec is defined
+            and rsync_route.resources[0].spec.host is defined"
   retries: 100
   delay: 3
 
 - set_fact:
-    mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+    mig_dest_service_url: "{{ rsync_route.resources[0].spec.host }}"
     mig_dest_data_location: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
     mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ volume_name }}/"
     failed_pvcs: []

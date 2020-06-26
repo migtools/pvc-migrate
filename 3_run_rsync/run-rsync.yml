@@ -32,6 +32,7 @@
         pvc_name: "{{ item.pvc_name }}"
         pod_name: "{{ pvc_name }}-ssh-rync"
         svc_name: "{{ pod_name }}-ssh"
+        route_name: "{{ svc_name }}-route"
         volume_name: "{{ item.volume_name }}"
         secret_name: "{{ pod_name }}-public-key"
         bound_pod_uid: "{{ item.bound_pod_uid }}"
