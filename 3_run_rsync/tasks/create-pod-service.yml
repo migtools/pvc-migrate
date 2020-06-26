@@ -92,7 +92,7 @@
     delay: 3
 
   - name: "Synchronizing files. This may take a while..."
-    shell: "rsync --partial -aPvvCo {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' ssh@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
+    shell: "rsync --partial -aPvvcO {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' ssh@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
     register: sync_output
     ignore_errors: yes
     become: yes
