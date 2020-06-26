@@ -8,9 +8,9 @@ metadata:
 spec:
   ports:
   - name: ssh
-    port: 22
+    port: 2222
     protocol: TCP
-    targetPort: ssh
+    targetPort: 2222
   selector:
     app: {{ pod_name }}
   type: LoadBalancer
