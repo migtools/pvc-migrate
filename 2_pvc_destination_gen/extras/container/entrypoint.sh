@@ -27,4 +27,4 @@ cp /etc/ssh/moduli /opt/ssh
 sed -i "s/UsePAM yes/UsePAM no/" /opt/ssh/sshd_config
 chown -R ssh:ssh /opt/ssh
 
-exec /usr/sbin/sshd -De -f /opt/ssh/sshd_config
+exec /usr/sbin/sshd -D -f /opt/ssh/sshd_config
