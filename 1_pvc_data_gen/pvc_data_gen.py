@@ -63,6 +63,7 @@ for namespace in data['namespaces_to_migrate']:
 
     v1_pvcs = dyn_client.resources.get(api_version='v1', kind='PersistentVolumeClaim')
     pvc_list = v1_pvcs.get(namespace=namespace)
+    namespaced_pvcs = []
     for pvc in pvc_list.items:
         
         # Map pod binding and uid onto PVC data
@@ -142,7 +143,12 @@ for namespace in data['namespaces_to_migrate']:
                 'bound_pod_mount_path': boundPodMountPath,
                 'bound_pod_mount_container_name': boundPodMountContainerName
         }
-        output.append(pvc_out)
+        namespaced_pvcs.append(pvc_out)
+    output_entry = {
+            'namespace': namespace,
+            'pvcs': namespaced_pvcs
+    }
+    output.append(output_entry)
     
 
 # Write out results to pvc-data.json, node-list.json
