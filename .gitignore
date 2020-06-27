@@ -1,4 +1,2 @@
-1_pvc_data_gen/vars/pvc-data-gen.yml
-
-output
+output/*.json
 
