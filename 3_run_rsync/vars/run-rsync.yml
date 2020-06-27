@@ -7,6 +7,6 @@ transfer_pod_mem_limits: '1Gi'
 transfer_pod_mem_requests: '1Gi'
 failed_pvcs_dir: ../output/
 successful_pvcs_dir: ../output/
-ssh_public_key: ""
 mig_dest_ssh_user: root
-mig_dest_ssh_key: "" # path to private key used for transfer pod
+mig_dest_ssh_public_key: ""
+mig_dest_ssh_private_key: "" # path to private key used for transfer pod

@@ -39,6 +39,11 @@
     transfer_pod_delete_wait_retries: 200
     transfer_svc_delete_wait_retries: 200
 
+- name: "Read public key"
+  slurp:
+    src: "{{ mig_dest_ssh_public_key }}"
+  register: ssh_public_key
+
 - debug:
     msg: "{{ lookup('template', 'pod.yml.j2') }}"
 

@@ -16,7 +16,7 @@ cp vars/run-rsync.yml.example vars/run-rsync.yml
 2. Run playbook while kubeconfig is set for connection to **destination cluster**
 ```
 export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
-ansible-playbook run-rsync.yml -e mig_run_sync_phase=true  -e mig_dest_ssh_key=~/.ssh/libra.pem
+ansible-playbook run-rsync.yml -e mig_run_sync_phase=true  -e mig_dest_ssh_private_key=~/.ssh/id_rsa -e mig_dest_ssh_public_key=~/.ssh/id_rsa.pub
 ```
 
 3. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate#7-run-cam-in-no-pvc-migration-mode) to complete the migration.
