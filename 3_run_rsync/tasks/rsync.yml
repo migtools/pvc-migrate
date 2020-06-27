@@ -1,0 +1,80 @@
+###
+# required
+# pvc_namespace
+# pvc_name
+# volume_name
+# bound_pod_uid
+# failed_pvcs: []
+# successful_pvcs: []
+# node_name
+# mig_source_host:
+
+- set_fact:
+    mig_source_data_base_location: "/var/lib/origin/openshift.local.volumes"
+    mig_source_data_location_k8s_mount: "kubernetes.io~glusterfs"
+
+- set_fact:
+    mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+    mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_name }}"
+    mig_source_data_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_data_location_k8s_mount }}/{{ volume_name }}/"
+    mig_source_host: "{{ node_name }}"
+    mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
+
+- delegate_to: "{{ mig_source_host|mandatory }}"
+  when: mig_run_sync_phase | bool | d('false')
+  ignore_errors: true
+  tags:
+  - sync_phase
+  - final_phase
+  block:
+  - name: "Ensure .ssh directory on source node"
+    file:
+      path: "~/.ssh"
+      state: directory
+    become: yes
+
+  - name: "Copying private key to source node"
+    copy:
+      src: "{{ mig_dest_ssh_key|mandatory }}"
+      dest: "{{ mig_dest_ssh_key_remote_location }}"
+      mode: 0600
+    become: yes
+
+  - name: "Wait for dns"
+    shell: "nslookup {{ mig_dest_service_url }}"
+    register: dig_output
+    until: dig_output.rc == 0
+    retries: 100
+    delay: 3
+
+  - name: "Synchronizing files. This may take a while..."
+    shell: "rsync --partial -aPvv {{ mig_source_data_location }} -e 'ssh -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
+    register: sync_output
+    become: yes
+
+- name: "Collect failed pvcs"
+  vars:
+    failed_pvc:
+      - name: "{{ pvc_name }}"
+        namespace: "{{ pvc_ns }}"
+        stdout: "{{ sync_output.stdout }}"
+        stderr: "{{ sync_output.stderr }}"
+        rc: "{{ sync_output.rc }}"
+  set_fact:
+    failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
+  when: sync_output.rc != 0
+
+- name: "Collect successful pvcs"
+  vars:
+    successful_pvc:
+      - name: "{{ pvc_name }}"
+        namespace: "{{ pvc_ns }}"
+  set_fact:
+    successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
+  when: sync_output.rc == 0
+
+- name: "Removing private key from source node"
+  file:
+    path: "{{ mig_dest_ssh_key_remote_location }}"
+    state: absent
+  become: yes

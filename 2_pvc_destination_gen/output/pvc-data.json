@@ -1,49 +1,29 @@
 [
   {
-    "pvc_name": "rocketchat-data-claim",
-    "pvc_namespace": "rocket-chat",
-    "capacity": "10Gi",
-    "labels": {
-      "velero.io/backup-name": "bd778570-b286-11ea-8b3d-298baab088b3-f9mrj",
-      "velero.io/restore-name": "bd778570-b286-11ea-8b3d-298baab088b3-rhz9q"
-    },
-    "annotations": {
-      "openshift.io/backup-registry-hostname": "docker-registry.default.svc:5000",
-      "openshift.io/backup-server-version": "1.11",
-      "openshift.io/restore-registry-hostname": "image-registry.openshift-image-registry.svc:5000",
-      "openshift.io/restore-server-version": "1.17",
-      "pv.kubernetes.io/bind-completed": "yes",
-      "pv.kubernetes.io/bound-by-controller": "yes",
-      "volume.beta.kubernetes.io/storage-provisioner": "kubernetes.io/aws-ebs",
-      "volume.kubernetes.io/selected-node": "ip-10-0-138-112.ec2.internal"
-    },
-    "uid": "66b89c3e-c25b-4d11-8af4-a167aeaf9013",
-    "storage_class": "glusterfs-storage",
-    "bound": "Bound",
-    "access_modes": [
-      "ReadWriteOnce"
-    ],
-    "node_name": "ip-10-0-138-112.ec2.internal"
-  },
-  {
-    "pvc_name": "mssql-pvc",
-    "pvc_namespace": "mssql-persistent",
-    "capacity": "10Gi",
-    "labels": {
-      "app": "mssql"
-    },
-    "annotations": {
-      "pv.kubernetes.io/bind-completed": "yes",
-      "pv.kubernetes.io/bound-by-controller": "yes",
-      "volume.beta.kubernetes.io/storage-provisioner": "kubernetes.io/aws-ebs",
-      "volume.kubernetes.io/selected-node": "ip-10-0-153-152.ec2.internal"
-    },
-    "uid": "f9187fd8-feb2-4542-a18f-6f41f293a571",
-    "storage_class": "glusterfs-storage",
-    "bound": "Bound",
-    "access_modes": [
-      "ReadWriteOnce"
-    ],
-    "node_name": "ip-10-0-153-152.ec2.internal"
+    "namespace": "rocket-chat",
+    "pvcs": [
+      {
+        "pvc_name": "rocketchat-data-claim",
+        "pvc_namespace": "rocket-chat",
+        "capacity": "10Gi",
+        "labels": {},
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"PersistentVolumeClaim\",\"metadata\":{\"annotations\":{},\"name\":\"rocketchat-data-claim\",\"namespace\":\"rocket-chat\"},\"spec\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"10Gi\"}}}}\n",
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes",
+          "volume.beta.kubernetes.io/storage-provisioner": "kubernetes.io/glusterfs"
+        },
+        "pvc_uid": "7c8b454b-a5da-11ea-a478-06604efc38b4",
+        "storage_class": "glusterfs-storage",
+        "bound": "Bound",
+        "access_modes": [
+          "ReadWriteOnce"
+        ],
+        "node_name": "node2.pgaikwad-o3.internal",
+        "volume_name": "pvc-7c8b454b-a5da-11ea-a478-06604efc38b4",
+        "bound_pod_name": "rocketchat-db-1-cqflm",
+        "bound_pod_uid": "82ed5f99-a5da-11ea-a478-06604efc38b4"
+      }
+    ]
   }
 ]

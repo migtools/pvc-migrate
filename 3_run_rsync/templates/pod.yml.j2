@@ -7,23 +7,20 @@ metadata:
     app: {{ pod_name }}
 spec:
   volumes:
-  - name: {{ pvc_name }}
+{% for pvc in pvcs %}
+  - name: {{ pvc.pvc_name }}
     persistentVolumeClaim:
-      claimName: {{ pvc_name }}
-#  - name: public-key
-#    secret:
-#      secretName: {{ secret_name }}
-#      defaultMode: 0600
+      claimName: {{ pvc.pvc_name }}
+{% endfor %}
   containers:
-  - name: myapp-container
+  - name: rsync
     image: {{ transfer_pod_image }}
     ports:
     - containerPort: 2222
       name: ssh
       protocol: TCP
     volumeMounts:
-    - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
-      name: {{ pvc_name }}
-#    - mountPath: "/root/ssl/"
-#      name: public-key
-#      readOnly: true
+{% for pvc in pvcs %}
+    - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_name }}"
+      name: {{ pvc.pvc_name }}
+{% endfor %}

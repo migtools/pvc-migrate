@@ -3,22 +3,19 @@
   vars_files:
     - vars/run-rsync.yml
   tasks:
-    - name: Verify required variables are defined
+    - name: "Verify required variables are defined"
       assert:
         that:
           - pvc_data_filepath is defined
 
-    # -------
     - block:
-      - name: Ensure pvc data file exists
+      - name: "Ensure pvc data file exists"
         stat:
           path: "{{ pvc_data_filepath }}"
         register: p
 
-      - debug: msg="PVC json file exists..."
-        when: p.stat.exists
-
       - fail:
+          msg: "PVC data file from Stage 1 does not exist..."
         when: p.stat.exists == False
 
       - set_fact:
@@ -26,24 +23,11 @@
           namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
 
 
-    - name: create pod and service
+    - name: "Create pod and service"
       vars:
-        pvc_namespace: "{{ item.pvc_namespace }}"
-        pvc_name: "{{ item.pvc_name }}"
-        pod_name: "{{ pvc_name }}-ssh-rync"
-        svc_name: "{{ pod_name }}-ssh"
-        volume_name: "{{ item.volume_name }}"
-        secret_name: "{{ pod_name }}-public-key"
-        bound_pod_uid: "{{ item.bound_pod_uid }}"
-        mig_source_host: "{{ item.node_name }}"
-#        public_key: "{{ lookup('file', rsync_public_key_filepath) | b64encode }}"
+        pvc_namespace: "{{ item.namespace }}"
+        pod_name: "{{ pvc_namespace }}-rsync"
+        svc_name: "{{ pvc_namespace }}-rsync"
+        pvcs: "{{ item.pvcs }}"
       include_tasks: "tasks/create-pod-service.yml"
       with_items: "{{ pvc_data }}"
-
-    - copy:
-        content: "{{ failed_pvcs | to_json }}"
-        dest: "{{ failed_pvcs_filepath }}"
-
-    - copy:
-        content: "{{ successful_pvcs | to_json }}"
-        dest: "{{ successful_pvcs_filepath }}"

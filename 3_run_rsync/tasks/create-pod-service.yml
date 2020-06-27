@@ -1,5 +1,16 @@
+# vars this task expects
+#        pvc_namespace: "{{ item.pvc_namespace }}"
+#        pvc_name: "{{ item.pvc_name }}"
+#        pod_name: "{{ pvc_name }}-ssh-rync"
+#        svc_name: "{{ pvc_namespace }}-ssh"
+#        volume_name: "{{ item.volume_name }}"
+#        secret_name: "{{ pod_name }}-public-key"
+#        bound_pod_uid: "{{ item.bound_pod_uid }}"
+#        mig_source_host: "{{ item.node_name }}"
+
 - debug: msg="{{ item }}"
 
+################### Experimental #############################
 # TODO: inject dynamic public key
 # try with poststart hook to get right permissions
 #       lifecycle:
@@ -20,18 +31,26 @@
 #        namespace: "{{ pvc_namespace }}"
 #      data:
 #        authorized_keys: "{{ public_key }}"
+###########################################################################
 
-- name: create a pod for rsync
+- set_fact:
+    transfer_pod_wait_retries: 200
+    transfer_svc_wait_retries: 200 
+
+- debug:
+    msg: "{{ lookup('template', 'pod.yml.j2') }}"
+
+- name: "Create a pod for rsync"
   k8s:
     state: present
     definition: "{{ lookup('template', 'pod.yml.j2') }}"
 
-- name: create a service for rsync
+- name: "Create a service for rsync"
   k8s:
     state: present
     definition: "{{ lookup('template', 'svc.yml.j2') }}"
 
-- name: wait for pod to be running
+- name: "Wait for pod to be running"
   k8s_info:
     api_version: v1
     kind: pod
@@ -39,10 +58,10 @@
     namespace: "{{ pvc_namespace }}"
   register: pod
   until: "true in (pod | json_query('resources[].status.containerStatuses[].ready'))"
-  retries: 100
+  retries: "{{ transfer_pod_wait_retries }}"
   delay: 3
 
-- name: wait for svc to get a load balancer IP
+- name: "Wait for svc to get a load balancer IP"
   k8s_facts:
     api_version: v1
     kind: service
@@ -53,85 +72,29 @@
             and svc.resources[0].status is defined
             and svc.resources[0].status.loadBalancer is defined
             and svc.resources[0].status.loadBalancer.ingress is defined"
-  retries: 100
+  retries: "{{ transfer_svc_wait_retries }}"
   delay: 3
 
 - set_fact:
-    mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
-    mig_dest_data_location: "/mnt/{{ pvc_namespace }}/{{ pvc_name }}"
-    mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ volume_name }}/"
     failed_pvcs: []
     successful_pvcs: []
 
-- delegate_to: "{{ mig_source_host|mandatory }}"
+- name: "Run rsync for pvc synchronously"
   vars:
-    mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
-  when: mig_run_sync_phase | bool | d('false')
-  tags:
-  - sync_phase
-  - final_phase
-  block:
-  - name: "Ensure .ssh directory on source node"
-    file:
-      path: "~/.ssh"
-      state: directory
-    become: yes
+    pvc_ns: "{{ item.pvc_namespace }}"
+    pvc_name: "{{ item.pvc_name }}"
+    volume_name: "{{ item.pvc_name }}"
+    bound_pod_uid: "{{ item.bound_pod_uid }}"
+    node_name: "{{ item.node_name }}"
+  include_tasks: "tasks/rsync.yml"
+  with_items: "{{ pvcs }}"
 
-  - name: "Copying private key to source node"
-    copy:
-      src: "{{ mig_dest_ssh_key|mandatory }}"
-      dest: "{{ mig_dest_ssh_key_remote_location }}"
-      mode: 0600
-    become: yes
-
-  - name: wait for dns
-    shell: "nslookup {{ mig_dest_service_url }}"
-    register: dig_output
-    until: dig_output.rc == 0
-    retries: 100
-    delay: 3
-
-  - name: "Synchronizing files. This may take a while..."
-    shell: "rsync --partial -aPvvcO {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' ssh@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
-    register: sync_output
-    ignore_errors: yes
-    become: yes
-
-  - name: collect failed pvcs
-    vars:
-      failed_pvc:
-        - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_namespace }}"
-    set_fact:
-      failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
-    when: sync_output.rc != 0
-
-  - name: collect successful pvcs
-    vars:
-      successful_pvc:
-        - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_namespace }}"
-    set_fact:
-      successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
-    when: sync_output.rc == 0
-   
-  - name: "Removing private key from source node"
-    file:
-      path: "{{ mig_dest_ssh_key_remote_location }}"
-      state: absent
-    become: yes
-#
-#  - when: sync_output.rc != 0
-#    fail:
-#      msg: "There was an error syncing data across clusters. Please re-run the task with --tags final_phase or --tags sync_phase. The data transfer will begin at the point it previously failed."
-
-
-- name: cleanup the transfer pod for rsync
+- name: "Cleanup the transfer pod for rsync"
   k8s:
     state: absent
     definition: "{{ lookup('template', 'pod.yml.j2') }}"
 
-- name: wait for pod to be deleted
+- name: "Wait for pod to be deleted"
   k8s_info:
     api_version: v1
     kind: pod
@@ -142,12 +105,12 @@
   retries: 100
   delay: 3
 
-- name: cleanup the service for rsync
+- name: "Cleanup the service for rsync"
   k8s:
     state: absent
     definition: "{{ lookup('template', 'svc.yml.j2') }}"
 
-- name: wait for service to be deleted
+- name: "Wait for service to be deleted"
   k8s_info:
     api_version: v1
     kind: service
@@ -157,3 +120,17 @@
   until: "{{ s.resources | length == 0 }}"
   retries: 100
   delay: 3
+
+- name: "Printing failed / succeded pvcs"
+  debug: 
+    msg: "{{ failed_pvcs }} {{ successful_pvcs }}"
+
+- name: "Dumping failure report"
+  copy:
+    content: "{{ failed_pvcs | to_json }}"
+    dest: "{{ failed_pvcs_dir }}/{{ pvc_namespace }}-failed.json"
+
+- name: "Dumping success report"
+  copy:
+    content: "{{ successful_pvcs | to_json }}"
+    dest: "{{ successful_pvcs_dir }}/{{ pvc_namespace }}-successful.json"
