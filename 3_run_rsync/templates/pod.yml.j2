@@ -14,6 +14,7 @@ spec:
 {% endfor %}
   containers:
   - name: rsync
+    imagePullPolicy: Always
     image: {{ transfer_pod_image }}
     ports:
     - containerPort: 2222
@@ -24,3 +25,9 @@ spec:
     - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_name }}"
       name: {{ pvc.pvc_name }}
 {% endfor %}
+    securityContext:
+      privileged: true
+      runAsUser: 0
+    env:
+    - name: SSH_PUBLIC_KEY
+      value: "{{ ssh_public_key }}"

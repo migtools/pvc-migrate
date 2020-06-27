@@ -7,7 +7,8 @@ if [ x"$USER_ID" == x"0" ]; then
 fi
 
 mkdir -p ${HOME}/.ssh && chmod 700 ${HOME}/.ssh
-cp /authorized_keys ${HOME}/.ssh/authorized_keys && chmod 600 ${HOME}/.ssh/authorized_keys
+echo ${SSH_PUBLIC_KEY} > ${HOME}/.ssh/authorized_keys
+chmod 600 ${HOME}/.ssh/authorized_keys
 
 if [ x"$USER_ID" != x"0" ]; then
     NSS_WRAPPER_PASSWD=/tmp/passwd.nss_wrapper
