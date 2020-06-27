@@ -35,7 +35,9 @@
 
 - set_fact:
     transfer_pod_wait_retries: 200
-    transfer_svc_wait_retries: 200 
+    transfer_svc_wait_retries: 200
+    transfer_pod_delete_wait_retries: 200
+    transfer_svc_delete_wait_retries: 200
 
 - debug:
     msg: "{{ lookup('template', 'pod.yml.j2') }}"
@@ -102,7 +104,7 @@
     namespace: "{{ pvc_namespace }}"
   register: p
   until: "{{ p.resources | length == 0 }}"
-  retries: 100
+  retries: transfer_pod_delete_wait_retries
   delay: 3
 
 - name: "Cleanup the service for rsync"
@@ -118,11 +120,11 @@
     namespace: "{{ pvc_namespace }}"
   register: s
   until: "{{ s.resources | length == 0 }}"
-  retries: 100
+  retries: transfer_svc_delete_wait_retries
   delay: 3
 
 - name: "Printing failed / succeded pvcs"
-  debug: 
+  debug:
     msg: "{{ failed_pvcs }} {{ successful_pvcs }}"
 
 - name: "Dumping failure report"
