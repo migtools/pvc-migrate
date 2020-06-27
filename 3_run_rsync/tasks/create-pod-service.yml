@@ -43,7 +43,8 @@
     msg: "{{ lookup('template', 'pod.yml.j2') }}"
 
 - name: "Read public key"
-  slurp: "{{ mig_dest_ssh_public_key }}"
+  slurp:
+    src: "{{ mig_dest_ssh_public_key }}"
   register: ssh_public_key
 
 - name: "Create a pod for rsync"
