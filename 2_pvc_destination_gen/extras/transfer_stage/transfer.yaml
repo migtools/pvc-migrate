@@ -25,7 +25,7 @@
       mode: "0600"
     
   - name: "Running transfer"
-    shell: "rsync --partial -aPvv {{ mig_source_data_location }} -e 'ssh -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' root@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
+    shell: "rsync --partial -aPvvcO {{ mig_source_data_location }} -e 'ssh -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' root@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
 
   - name: "Removing private key from source"
     file:
