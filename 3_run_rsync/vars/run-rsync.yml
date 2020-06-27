@@ -3,7 +3,6 @@ namespace_data_filepath: ../output/namespace-data.json
 transfer_pod_image: "quay.io/konveyor/ssh-transfer:latest"
 failed_pvcs_dir: ../output/
 successful_pvcs_dir: ../output/
-ssh_transfer_image: "quay.io/konveyor/ssh-transfer:latest"
 ssh_public_key: ""
 mig_dest_ssh_user: root
 mig_dest_ssh_key: "" # path to private key used for transfer pod
