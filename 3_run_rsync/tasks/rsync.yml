@@ -49,28 +49,28 @@
     ignore_errors: yes
     become: yes
 
-  - name: collect failed pvcs
-    delegate_to: localhost
-    vars:
-      failed_pvc:
-        - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_ns }}"
-    set_fact:
-      failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
-    when: sync_output.rc != 0
 
-  - name: collect successful pvcs
-    delegate_to: localhost
-    vars:
-      successful_pvc:
-        - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_ns }}"
-    set_fact:
-      successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
-    when: sync_output.rc == 0
+- name: "Collect failed pvcs"
+  vars:
+    failed_pvc:
+      - name: "{{ pvc_name }}"
+        namespace: "{{ pvc_ns }}"
+        stdout: "{{ sync_output.stdout }}"
+  set_fact:
+    failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
+  when: sync_output.rc != 0
 
-  - name: "Removing private key from source node"
-    file:
-      path: "{{ mig_dest_ssh_key_remote_location }}"
-      state: absent
-    become: yes
+- name: "Collect successful pvcs"
+  vars:
+    successful_pvc:
+      - name: "{{ pvc_name }}"
+        namespace: "{{ pvc_ns }}"
+  set_fact:
+    successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
+  when: sync_output.rc == 0
+
+- name: "Removing private key from source node"
+  file:
+    path: "{{ mig_dest_ssh_key_remote_location }}"
+    state: absent
+  become: yes
