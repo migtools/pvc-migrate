@@ -10,15 +10,18 @@
 # mig_source_host:
 
 - set_fact:
+    mig_source_data_base_location: "/var/lib/origin/openshift.local.volumes"
+    mig_source_data_location_k8s_mount: "kubernetes.io~glusterfs"
     mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
     mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_name }}"
-    mig_source_data_location: "/var/lib/origin/openshift.local.volumes/pods/{{ bound_pod_uid }}/volumes/kubernetes.io~glusterfs/{{ volume_name }}/"
+    mig_source_data_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_data_location_k8s_mount }}/{{ volume_name }}/"
     mig_source_host: "{{ node_name }}"
 
 - delegate_to: "{{ mig_source_host|mandatory }}"
   vars:
     mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
   when: mig_run_sync_phase | bool | d('false')
+  ignore_errors: true
   tags:
   - sync_phase
   - final_phase
@@ -36,7 +39,7 @@
       mode: 0600
     become: yes
 
-  - name: wait for dns
+  - name: "Wait for dns"
     shell: "nslookup {{ mig_dest_service_url }}"
     register: dig_output
     until: dig_output.rc == 0
@@ -46,31 +49,28 @@
   - name: "Synchronizing files. This may take a while..."
     shell: "rsync --partial -aPvv {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' ssh@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
     register: sync_output
-    ignore_errors: yes
     become: yes
 
-  - name: collect failed pvcs
-    delegate_to: localhost
-    vars:
-      failed_pvc:
-        - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_ns }}"
-    set_fact:
-      failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
-    when: sync_output.rc != 0
+- name: "Collect failed pvcs"
+  vars:
+    failed_pvc:
+      - name: "{{ pvc_name }}"
+        namespace: "{{ pvc_ns }}"
+  set_fact:
+    failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
+  when: sync_output.rc != 0
 
-  - name: collect successful pvcs
-    delegate_to: localhost
-    vars:
-      successful_pvc:
-        - name: "{{ pvc_name }}"
-          namespace: "{{ pvc_ns }}"
-    set_fact:
-      successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
-    when: sync_output.rc == 0
+- name: "Collect successful pvcs"
+  vars:
+    successful_pvc:
+      - name: "{{ pvc_name }}"
+        namespace: "{{ pvc_ns }}"
+  set_fact:
+    successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
+  when: sync_output.rc == 0
 
-  - name: "Removing private key from source node"
-    file:
-      path: "{{ mig_dest_ssh_key_remote_location }}"
-      state: absent
-    become: yes
+- name: "Removing private key from source node"
+  file:
+    path: "{{ mig_dest_ssh_key_remote_location }}"
+    state: absent
+  become: yes

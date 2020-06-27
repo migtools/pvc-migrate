@@ -8,10 +8,9 @@
 #        bound_pod_uid: "{{ item.bound_pod_uid }}"
 #        mig_source_host: "{{ item.node_name }}"
 
-
-
 - debug: msg="{{ item }}"
 
+################### Experimental #############################
 # TODO: inject dynamic public key
 # try with poststart hook to get right permissions
 #       lifecycle:
@@ -32,20 +31,26 @@
 #        namespace: "{{ pvc_namespace }}"
 #      data:
 #        authorized_keys: "{{ public_key }}"
-#
-####
-- debug: msg="{{ lookup('template', 'pod.yml.j2') }}"
-- name: create a pod for rsync
+###########################################################################
+
+- set_fact:
+    transfer_pod_wait_retries: 200
+    transfer_svc_wait_retries: 200 
+
+- debug:
+    msg: "{{ lookup('template', 'pod.yml.j2') }}"
+
+- name: "Create a pod for rsync"
   k8s:
     state: present
     definition: "{{ lookup('template', 'pod.yml.j2') }}"
 
-- name: create a service for rsync
+- name: "Create a service for rsync"
   k8s:
     state: present
     definition: "{{ lookup('template', 'svc.yml.j2') }}"
 
-- name: wait for pod to be running
+- name: "Wait for pod to be running"
   k8s_info:
     api_version: v1
     kind: pod
@@ -53,10 +58,10 @@
     namespace: "{{ pvc_namespace }}"
   register: pod
   until: "true in (pod | json_query('resources[].status.containerStatuses[].ready'))"
-  retries: 100
+  retries: "{{ transfer_pod_wait_retries }}"
   delay: 3
 
-- name: wait for svc to get a load balancer IP
+- name: "Wait for svc to get a load balancer IP"
   k8s_facts:
     api_version: v1
     kind: service
@@ -67,14 +72,14 @@
             and svc.resources[0].status is defined
             and svc.resources[0].status.loadBalancer is defined
             and svc.resources[0].status.loadBalancer.ingress is defined"
-  retries: 100
+  retries: "{{ transfer_svc_wait_retries }}"
   delay: 3
 
 - set_fact:
     failed_pvcs: []
     successful_pvcs: []
 
-- name: run rsync for pvc synchronously
+- name: "Run rsync for pvc synchronously"
   vars:
     pvc_ns: "{{ item.pvc_namespace }}"
     pvc_name: "{{ item.pvc_name }}"
@@ -84,17 +89,12 @@
   include_tasks: "tasks/rsync.yml"
   with_items: "{{ pvcs }}"
 
-#  - when: sync_output.rc != 0
-#    fail:
-#      msg: "There was an error syncing data across clusters. Please re-run the task with --tags final_phase or --tags sync_phase. The data transfer will begin at the point it previously failed."
-
-
-- name: cleanup the transfer pod for rsync
+- name: "Cleanup the transfer pod for rsync"
   k8s:
     state: absent
     definition: "{{ lookup('template', 'pod.yml.j2') }}"
 
-- name: wait for pod to be deleted
+- name: "Wait for pod to be deleted"
   k8s_info:
     api_version: v1
     kind: pod
@@ -105,12 +105,12 @@
   retries: 100
   delay: 3
 
-- name: cleanup the service for rsync
+- name: "Cleanup the service for rsync"
   k8s:
     state: absent
     definition: "{{ lookup('template', 'svc.yml.j2') }}"
 
-- name: wait for service to be deleted
+- name: "Wait for service to be deleted"
   k8s_info:
     api_version: v1
     kind: service
@@ -121,12 +121,16 @@
   retries: 100
   delay: 3
 
-- debug: msg="{{ failed_pvcs }} {{ successful_pvcs }}"
+- name: "Printing failed / succeded pvcs"
+  debug: 
+    msg: "{{ failed_pvcs }} {{ successful_pvcs }}"
 
-- copy:
+- name: "Dumping failure report"
+  copy:
     content: "{{ failed_pvcs | to_json }}"
     dest: "{{ failed_pvcs_dir }}/{{ pvc_namespace }}-failed.json"
 
-- copy:
+- name: "Dumping success report"
+  copy:
     content: "{{ successful_pvcs | to_json }}"
     dest: "{{ successful_pvcs_dir }}/{{ pvc_namespace }}-successful.json"
