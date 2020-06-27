@@ -14,6 +14,13 @@ spec:
 {% endfor %}
   containers:
   - name: rsync
+    resources:
+      limits:
+        cpu: {{ transfer_pod_cpu_limits }}
+        memory: {{ transfer_pod_mem_limits }}
+      requests:
+        cpu: {{ transfer_pod_cpu_requests }}
+        memory: {{ transfer_pod_mem_requests }}
     imagePullPolicy: Always
     image: {{ transfer_pod_image }}
     ports:

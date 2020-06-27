@@ -1,6 +1,10 @@
 pvc_data_filepath: ../output/pvc-data.json
 namespace_data_filepath: ../output/namespace-data.json
 transfer_pod_image: "quay.io/konveyor/ssh-transfer:latest"
+transfer_pod_cpu_limits: '1'
+transfer_pod_cpu_requests: '100m'
+transfer_pod_mem_limits: '1Gi'
+transfer_pod_mem_requests: '1Gi'
 failed_pvcs_dir: ../output/
 successful_pvcs_dir: ../output/
 ssh_public_key: ""
