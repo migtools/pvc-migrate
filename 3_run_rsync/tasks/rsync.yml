@@ -56,6 +56,8 @@
       - name: "{{ pvc_name }}"
         namespace: "{{ pvc_ns }}"
         stdout: "{{ sync_output.stdout }}"
+        stderr: "{{ sync_output.stderr }}"
+        rc: "{{ sync_output.rc }}"
   set_fact:
     failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
   when: sync_output.rc != 0
