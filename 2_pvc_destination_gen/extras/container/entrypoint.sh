@@ -1,10 +1,15 @@
 #!/bin/bash
-mkdir -p ${HOME}/.ssh && chmod 700 ${HOME}/.ssh
-cp /authorized_keys ${HOME}/.ssh/authorized_keys && chmod 600 ${HOME}/.ssh/authorized_keys
 
 USER_ID=$(id -u)
 
-if [ x"$USER_ID" != x"0" -a x"$USER_ID" != x"1001" ]; then
+if [ x"$USER_ID" == x"0" ]; then
+  export HOME=/root
+fi
+
+mkdir -p ${HOME}/.ssh && chmod 700 ${HOME}/.ssh
+cp /authorized_keys ${HOME}/.ssh/authorized_keys && chmod 600 ${HOME}/.ssh/authorized_keys
+
+if [ x"$USER_ID" != x"0" ]; then
     NSS_WRAPPER_PASSWD=/tmp/passwd.nss_wrapper
     NSS_WRAPPER_GROUP=/tmp/group.nss_wrapper
 
@@ -20,11 +25,21 @@ if [ x"$USER_ID" != x"0" -a x"$USER_ID" != x"1001" ]; then
     export LD_PRELOAD
 fi
 
-ssh-keygen -A
-cp /etc/ssh/ssh_host_* /opt/ssh/
-cp /etc/ssh/sshd_config /opt/ssh
-cp /etc/ssh/moduli /opt/ssh
-sed -i "s/UsePAM yes/UsePAM no/" /opt/ssh/sshd_config
-chown -R ssh:ssh /opt/ssh
+sed -i 's/#Port.*$/Port 2222/' /etc/ssh/sshd_config
+sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+ssh-keygen -A 
 
-exec /usr/sbin/sshd -D -f /opt/ssh/sshd_config
+if [ x"$USER_ID" != x"0" ]; then
+  cp /etc/ssh/ssh_host_* /opt/ssh/
+  cp /etc/ssh/sshd_config /opt/ssh
+  cp /etc/ssh/moduli /opt/ssh
+  sed -i 's/etc/opt/' /opt/ssh/sshd_config
+  sed -i "s/UsePAM yes/UsePAM no/" /opt/ssh/sshd_config
+  sed -i 's|#PidFile.*$|PidFile /opt/ssh/sshd.pid|' /opt/ssh/sshd_config
+  chown -R ssh:ssh /opt/ssh
+  exec /usr/sbin/sshd -D -f /opt/ssh/sshd_config
+else
+  exec /usr/sbin/sshd -D
+fi
+
