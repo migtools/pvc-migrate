@@ -7,6 +7,7 @@ metadata:
 spec:
   containers:
   - name: myapp-container
+    imagePullPolicy: Always
     image: ${IMG}
     ports:
     - containerPort: 22
@@ -17,3 +18,7 @@ spec:
       mountPath: /tmp
     securityContext:
       privileged: true
+      runAsUser: 0
+    env:
+    - name: SSH_PUBLIC_KEY
+      value: "{{ ssh_public_key }}"
