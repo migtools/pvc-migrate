@@ -37,4 +37,4 @@ spec:
       runAsUser: 0
     env:
     - name: SSH_PUBLIC_KEY
-      value: "{{ ssh_public_key }}"
+      value: "{{ ssh_public_key['content'] | b64decode }}"

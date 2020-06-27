@@ -34,7 +34,7 @@
 
   - name: "Copying private key to source node"
     copy:
-      src: "{{ mig_dest_ssh_key|mandatory }}"
+      src: "{{ mig_dest_ssh_private_key|mandatory }}"
       dest: "{{ mig_dest_ssh_key_remote_location }}"
       mode: 0600
     become: yes

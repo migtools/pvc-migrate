@@ -3,7 +3,7 @@
 #    mig_source_data_location : Mount point on source side
 #    mig_dest_data_location : Mount point on destination side
 #    mig_source_host : IP address to connect to
-#    mig_dest_ssh_key : SSH key to connect to destination
+#    mig_dest_ssh_private_key : SSH key to connect to destination
 #
 #  Output : 
 #    zero     :  if successful transfer 
@@ -20,7 +20,7 @@
 
   - name: "Copying private key to source"
     copy:
-      src: "{{ mig_dest_ssh_key }}"
+      src: "{{ mig_dest_ssh_private_key }}"
       dest: "{{ mig_dest_ssh_key_remote_location }}"
       mode: "0600"
     
