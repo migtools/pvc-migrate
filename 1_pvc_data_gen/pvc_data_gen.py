@@ -2,7 +2,6 @@ import json
 import yaml
 import urllib3
 import os
-import re
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from kubernetes import client, config
