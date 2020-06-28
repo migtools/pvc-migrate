@@ -10,3 +10,4 @@ successful_pvcs_dir: ../output/
 mig_dest_ssh_user: root
 mig_dest_ssh_public_key: ""
 mig_dest_ssh_private_key: "" # path to private key used for transfer pod
+wait_for_finalizer: false

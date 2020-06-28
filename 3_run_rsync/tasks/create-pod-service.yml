@@ -127,6 +127,7 @@
   until: "{{ s.resources | length == 0 }}"
   retries: "{{ transfer_svc_delete_wait_retries }}"
   delay: 3
+  when: "{{ wait_for_finalizer }}"
 
 - name: "Printing failed / succeded pvcs"
   debug:
