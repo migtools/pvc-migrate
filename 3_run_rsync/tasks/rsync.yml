@@ -47,7 +47,7 @@
     delay: 3
 
   - name: "Synchronizing files. This may take a while..."
-    shell: "rsync -aPvvH {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_ssh_user }}@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
+    shell: "rsync -aPvvHX --filter=’-x security.selinux’ {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_ssh_user }}@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
 
     register: sync_output
     become: yes
