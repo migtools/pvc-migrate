@@ -110,6 +110,5 @@ spec:
  
   3. Create a MigPlan and MigMigration covering the same namespaces migrated with `pvc-migrate`.
  
- ## Troubleshooting
-If any steps fail, you can edit the shell script `migrate_pvc_data.sh`, toggling steps on/off as needed to re-run desired steps. If some PVCs migrate successfully and some fail, you can remove the PVCs that already migrated successfully from `output/pvc-data.json`
+
    
