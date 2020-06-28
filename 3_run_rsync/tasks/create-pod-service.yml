@@ -78,7 +78,9 @@
   until: " svc.resources is defined
             and svc.resources[0].status is defined
             and svc.resources[0].status.loadBalancer is defined
-            and svc.resources[0].status.loadBalancer.ingress is defined"
+            and svc.resources[0].status.loadBalancer.ingress is defined
+            and (svc.resources[0].status.loadBalancer.ingress | length) == 1
+            and svc.resources[0].status.loadBalancer.ingress[0].hostname is defined"
   retries: "{{ transfer_svc_wait_retries }}"
   delay: 3
 
