@@ -2,6 +2,7 @@ import json
 import yaml
 import urllib3
 import os
+import re
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from kubernetes import client, config
@@ -17,13 +18,27 @@ except:
     print("\n[!] Failed while setting up OpenShift client. Ensure KUBECONFIG is set. ")
     exit(1)
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
+# Ensure KUBECONFIG is set to source cluster by checking for OpenShift v3 in version endpoint
+try:
+    kube_minor_version = dyn_client.version.get("kubernetes", {}).get("minor", "").split("+")[0]
+    if int(kube_minor_version) > 11:
+        print("[!] [WARNING] KUBECONFIG should be set to OCP 3.x cluster for 'Stage 1', but OCP 4.x cluster detected.")
+        print("[!] [WARNING] Detected k8s version: {}\n".format(dyn_client.version.get("kubernetes", {}).get("gitVersion", "")))
+        selection = input("[?] Press 'Enter' to quit, or type 'i' to ignore and continue: ")
+        if 'i' in selection:
+            print("Continuing...\n")
+        else:
+            print("Exiting...\n")
+            os._exit(1)
+except:
+    print("[!] Failed to parse OpenShift version.")
 
-# Using this as a workaround to handle empty results
+# Object serving as 'get' default for empty results
 class EmptyK8sResult:
     __dict__ = {}
 emptyDict = EmptyK8sResult()
 
+# Make output dir if doesn't exist
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
