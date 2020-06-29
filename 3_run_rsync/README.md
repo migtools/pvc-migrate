@@ -14,10 +14,27 @@ a LoadBalancer service through which we can run ssh/scp/rsync externally
 cp vars/run-rsync.yml.example vars/run-rsync.yml
 ```
 
-3. Run Stage 3 playbook while KUBECONFIG is set for connection to **destination cluster**
+3. Set vars in `vars/run-rsync.yml`
+
 ```
-export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
-ansible-playbook run-rsync.yml -e mig_run_sync_phase=true  -e mig_dest_ssh_private_key=~/.ssh/id_rsa -e mig_dest_ssh_public_key=~/.ssh/id_rsa.pub
+# Destination cluster 'transfer pod' resource limits
+transfer_pod_cpu_limits: '1'
+transfer_pod_cpu_requests: '100m'
+transfer_pod_mem_limits: '1Gi'
+transfer_pod_mem_requests: '1Gi'
+
+# Destination cluster 'transfer pod' SSH auth info
+mig_dest_ssh_public_key: ""  # path to public key to install as authorized user in transfer pod
+mig_dest_ssh_private_key: "" # path to private key used for SSH auth into transfer pod as 'root' user
+
+# Wait for transfer pod service ELB deletion to complete before proceeding to next PVC
+wait_for_finalizer: false
 ```
 
-4. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate#7-run-cam-in-no-pvc-migration-mode) to complete the migration.
+4. Run Stage 3 playbook while KUBECONFIG is set for connection to **destination cluster**
+```
+export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
+ansible-playbook run-rsync.yml 
+```
+
+5. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate#7-run-cam-in-no-pvc-migration-mode) to complete the migration.
