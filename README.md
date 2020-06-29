@@ -36,6 +36,11 @@ git clone https://github.com/konveyor/pvc-migrate && cd pvc-migrate
     pip install -r requirements.txt
     ```
 
+ * Install selinux dependency if selinux is enabled
+    ```
+    pip install selinux
+    ```
+
  * To update any requirements
     ```
     pip freeze &> requirements.txt
@@ -54,6 +59,7 @@ pip3 install urllib3==1.24.2 --user     # stage 1 requirement
 sudo dnf install jq                     # jq-1.6 for json processing
 sudo dnf install bind-utils
 sudo dnf install dnsutils
+sudo dnf install python3-libselinux
 ```
 
 ### 3. Set cluster authentication details
