@@ -1,6 +1,6 @@
 # Storage Class Selection
 
-**Stage 2** of `pvc-migrate` is responsible for migrating PVCs to destination. 
+**Stage 2** of `pvc-migrate` is responsible for migrating PVCs resource definitions to the destination OCP cluster. 
 
 While migrating PVCs, `pvc-migrate` cannot automatically choose the correct StorageClass (SC) for migrated PVCs on the destination side. As examples of such mappings:
 
