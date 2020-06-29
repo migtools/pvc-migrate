@@ -8,15 +8,16 @@ a LoadBalancer service through which we can run ssh/scp/rsync externally
 1. Ensure you have followed steps in [inventory-notes.md](../docs/inventory-notes.md) 
    1. Complete SSH Configuration 
    1. Fill out Ansible Host Inventory
-1. Create your own copy of vars file 
+
+2. Create your own copy of vars file 
 ```
 cp vars/run-rsync.yml.example vars/run-rsync.yml
 ```
 
-2. Run playbook while kubeconfig is set for connection to **destination cluster**
+3. Run Stage 3 playbook while KUBECONFIG is set for connection to **destination cluster**
 ```
 export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
 ansible-playbook run-rsync.yml -e mig_run_sync_phase=true  -e mig_dest_ssh_private_key=~/.ssh/id_rsa -e mig_dest_ssh_public_key=~/.ssh/id_rsa.pub
 ```
 
-3. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate#7-run-cam-in-no-pvc-migration-mode) to complete the migration.
+4. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate#7-run-cam-in-no-pvc-migration-mode) to complete the migration.

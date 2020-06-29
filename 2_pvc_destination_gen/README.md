@@ -6,7 +6,6 @@ This playbook takes the input from [Stage 1](../1_pvc_data_gen) and creates PVC 
 
 1. Create your own copy of vars file 
 ```
-cp vars/pvc-destination-gen.yml.example vars/pvc-destination-gen.yml
 cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 ```
 
