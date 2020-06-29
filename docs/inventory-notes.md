@@ -1,21 +1,35 @@
 # Configuring SSH and Inventory
 
-`Stage 3` of `pvc-migrate` tooling is responsible for the synchronization of data between the source and the destination cluster.
+**Stage 3** of `pvc-migrate` runs `rsync` to synchronize data between the source and the destination cluster PVCs.
 
-On the destination cluster, for each PVC to be migrated, `pvc-migrate` creates a dummy pod that has `ssh` and `rsync` installed. It mounts the PVC we created in `Stage 2` onto these pods to be able to `rsync` from the source cluster. 
+---
 
-On the source side, for each PVC to be migrated, `pvc-migrate` finds out the physical node on which data is present. It then SSHs into the node and runs `rsync` keeping the destination cluster as the target. Therefore, `pvc-migrate` needs to be able to connect with every node on the source side. 
+**On the destination cluster**, for each PVC to be migrated, `pvc-migrate` will: 
+1. Create a *dummy sync Pod* that has `ssh` and `rsync` installed.
+2. Mount the PVCs created in `Stage 2` onto these *dummy sync Pod* to make `rsync` possible from the source cluster.
 
-Here are absolute requirements for `pvc-migrate` to work :
+**On the source cluster**, for each PVC to be migrated, `pvc-migrate` will:
+1. Determine the OpenShift Node on which data is present.
+2. SSH into the OpenShift Node run `rsync` with the destination cluster as the `rsync` target.
 
-* Ansible Host machine needs access to _all_ the OpenShift nodes on source cluster
- * If nodes are not accessible from the internet, `pvc-migrate` relies on a bastion host to connect with the nodes. 
-* Ansible Host machine needs access to stage SSH pods created on the destination cluster. 
- * Users need to build their own Docker image to use as dummy pods, the Dockerfile and the instructions to build new docker image can be found [here](../2_pvc_destination_gen/extras/container/Dockerfile)
+Therefore, `pvc-migrate` needs to be able to connect with every node on the source side. 
 
-## SSH Configuration
+---
 
-Before running the sync phase, we configure SSH Daemon on Ansible Host to allow jump over bastion into OpenShift nodes.
+## Stage 3: Network Connectivity requirements:
+
+1. *Ansible Control Node* host needs access to _all_ the OpenShift Nodes on source cluster
+   1. If OpenShift Nodes are not accessible from the internet, `pvc-migrate` can connect through a bastion host. 
+   
+   
+1. *Ansible Control Node* host needs access to *dummy sync Pods* created on the destination cluster. 
+   1. Users need to build their own container image for *dummy sync Pods*, the Dockerfile and the instructions to build new docker image can be found [here](../2_pvc_destination_gen/extras/container/Dockerfile)
+
+## Stage 3: Required SSH Configuration:
+
+Before running *Stage 3*, configure the SSH Daemon on the Ansible Control Node host to allow jump over bastion into OpenShift nodes.
+
+### Bastion Host - `~/.ssh/config`
 
 See following example configuration in `~/.ssh/config` :
 
@@ -33,11 +47,12 @@ Host ${BASTION_HOST}
     ControlPersist 5m
 ```
 
-Additionally, we configure Ansible to use the the above configuration along with some additional options in `ansible.cfg` 
+### Ansible Control Node - `ansible.cfg`
+
+See the following example configuration of `ansible.cfg`
 
 ```sh
 [ssh_connection]
 ssh_args = -F ${HOME}/.ssh/config -o ControlMaster=auto -o ControlPersist=5m
 control_path = ${HOME}/.ssh/ansible-%%r@%%h:%%p
 ```
-
