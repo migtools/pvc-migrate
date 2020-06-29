@@ -17,4 +17,22 @@ spec:
     app: {{ pod_name }}
     purpose: rsync
     owner: pvc-migrate
-  type: LoadBalancer
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ svc_name }}
+  namespace: {{ pvc_namespace }}
+  labels:
+    app: {{ pod_name }}
+    purpose: rsync
+    owner: pvc-migrate
+spec:
+  to:
+    kind: Service
+    name: ssh
+  port:
+    targetPort: 2222
+  tls:
+    termination: passthrough

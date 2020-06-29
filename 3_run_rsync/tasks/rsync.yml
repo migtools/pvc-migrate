@@ -21,6 +21,54 @@
     mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
 
 - delegate_to: "{{ mig_source_host|mandatory }}"
+  tags:
+    - sync_phase
+    - final_phase
+  block:
+    - name: "Install stunnel"
+      yum:
+        name: stunnel
+        state: latest
+      become: true
+
+    - name: "Write stunnel.conf"
+      copy:
+        content: |
+          foreground = no
+          pid =
+          sslVersion = TLSv1.2
+          client = yes
+          syslog = no
+          [ssh]
+          accept = 2222
+          CAFile = /etc/stunnel/tls.crt
+          cert = /etc/stunnel/tls.crt
+          connect = {{ route.resources[0].spec.host }}:443
+          verify = 2
+          key = /etc/stunnel/tls.key
+        dest: /etc/stunnel/stunnel.conf
+      become: true
+
+    - name: "Write tls.crt"
+      copy:
+        content: "{{ crt['content']|b64decode }}"
+        dest: /etc/stunnel/tls.crt
+      become: true
+
+    - name: "Write tls.key"
+      copy:
+        content: "{{ key['content']|b64decode }}"
+        dest: /etc/stunnel/tls.key
+        mode: 0600
+      become: true
+
+    - name: "Start stunnel"
+      systemd:
+        state: started
+        name: stunnel
+      become: true
+
+- delegate_to: "{{ mig_source_host|mandatory }}"
   ignore_errors: true
   tags:
   - sync_phase
