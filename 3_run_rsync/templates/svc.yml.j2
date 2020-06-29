@@ -22,7 +22,7 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ svc_name }}
+  name: {{ route_name }}
   namespace: {{ pvc_namespace }}
   labels:
     app: {{ pod_name }}
