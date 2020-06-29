@@ -10,7 +10,7 @@
 
 **On the source cluster**, for each PVC to be migrated, `pvc-migrate` will:
 1. Determine the source cluster OpenShift Node on which data is present.
-2. SSH into the OpenShift Node and run `rsync` with the destination cluster *dummmy sync Pod* as the `rsync` target.
+2. SSH into the OpenShift Node and run `rsync` with the destination cluster *dummy sync Pod* as the `rsync` target.
 
 Therefore, `pvc-migrate` needs to be able to connect with every node on the source side. 
 
