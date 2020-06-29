@@ -10,7 +10,7 @@ cp vars/pvc-destination-gen.yml.example vars/pvc-destination-gen.yml
 cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 ```
 
-2. Edit storage class mappings in vars files above as needed.
+2. Edit storage class mappings in `vars/storage-class-mappings.yml` as needed.
 
 3. Run playbook while KUBECONFIG is set for connection to **destination cluster**
 ```
@@ -21,7 +21,7 @@ ansible-playbook pvc-destination-gen.yml
 
 ```
 export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
-oc get pvc -A
+oc get pvc -n sample-namespace
 ```
 
 5. Move on to [Stage 3](../3_run_rsync)
