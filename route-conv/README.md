@@ -13,7 +13,7 @@ Create a host key-pair for sshd:
 Create a TLS key and certificate for stunnel:
 
 ```
-    make -f /etc/pki/tls/certs/Makefile ./stunnel.pem
+    gen_stunnel_pem.sh
     openssl x509 -in stunnel.pem -out stunnel-crt.pem
     openssl pkey -in stunnel.pem -out stunnel-key.pem
 ```
