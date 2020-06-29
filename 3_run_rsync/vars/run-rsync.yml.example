@@ -1,6 +1,13 @@
 pvc_data_filepath: ../output/pvc-data.json
-namespace_data_filepath: ../output/namespaces-data.json
-transfer_pod_image: quay.io/pranavgaikwad/ssh-centos:latest
-rsync_public_key_filepath: /tmp/ssl/public/rsync-pod-public.pub
-failed_pvcs_filepath: ../output/failed-pvcs.json
-successful_pvcs_filepath: ../output/successful-pvcs.json
+namespace_data_filepath: ../output/namespace-data.json
+transfer_pod_image: "quay.io/konveyor/ssh-transfer:latest"
+transfer_pod_cpu_limits: '1'
+transfer_pod_cpu_requests: '100m'
+transfer_pod_mem_limits: '1Gi'
+transfer_pod_mem_requests: '1Gi'
+failed_pvcs_dir: ../output/
+successful_pvcs_dir: ../output/
+mig_dest_ssh_user: root
+mig_dest_ssh_public_key: ""
+mig_dest_ssh_private_key: "" # path to private key used for transfer pod
+wait_for_finalizer: false
