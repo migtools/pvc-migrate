@@ -31,6 +31,7 @@
         pvc_namespace: "{{ item.namespace }}"
         pod_name: "{{ pvc_namespace }}"
         svc_name: "{{ pvc_namespace }}"
+        route_name: "{{ pvc_namespace }}"
         pvcs: "{{ item.pvcs }}"
       include_tasks: "tasks/create-pod-service.yml"
       with_items: "{{ pvc_data }}"
