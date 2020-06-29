@@ -5,12 +5,12 @@
 ---
 
 **On the destination cluster**, for each PVC to be migrated, `pvc-migrate` will: 
-1. Create a *dummy sync Pod* that has `ssh` and `rsync` installed.
-2. Mount the PVCs created in `Stage 2` onto these *dummy sync Pod* to make `rsync` possible from the source cluster.
+1. Create a *transfer Pod* that has `ssh` and `rsync` installed.
+2. Mount the PVCs created in `Stage 2` onto these '*transfer Pods*' to make `rsync` possible from the source cluster.
 
 **On the source cluster**, for each PVC to be migrated, `pvc-migrate` will:
 1. Determine the source cluster OpenShift Node on which data is present.
-2. SSH into the OpenShift Node and run `rsync` with the destination cluster *dummy sync Pod* as the `rsync` target.
+2. SSH into the OpenShift Node and run `rsync` with the destination cluster *transfer Pod* as the `rsync` target.
 
 Therefore, `pvc-migrate` needs to be able to connect with every node on the source side. 
 
@@ -21,8 +21,7 @@ Therefore, `pvc-migrate` needs to be able to connect with every node on the sour
 1. *Ansible Control Node* host needs *SSH access* to _all_ the OpenShift Nodes on source cluster
    1. If OpenShift Nodes are not accessible from the internet, `pvc-migrate` can connect through a bastion host. 
    
-1. *Ansible Control Node* host needs *SSH access* to *dummy sync Pods* created on the destination cluster. 
-   1. Users need to build their own container image for *dummy sync Pods*, the Dockerfile and the instructions to build new docker image can be found [here](../2_pvc_destination_gen/extras/container/Dockerfile)
+1. *Ansible Control Node* host needs *SSH access* to '*transfer Pods*' created on the destination cluster. 
 
 ## Required SSH and Ansible Configuration 
 
