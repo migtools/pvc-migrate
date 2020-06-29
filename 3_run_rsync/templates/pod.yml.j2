@@ -8,7 +8,7 @@ metadata:
 spec:
   volumes:
 {% for pvc in pvcs %}
-  - name: {{ pvc.pvc_name }}
+  - name: {{ pvc.pvc_name | replace('.','-') }}
     persistentVolumeClaim:
       claimName: {{ pvc.pvc_name }}
 {% endfor %}
@@ -29,8 +29,8 @@ spec:
       protocol: TCP
     volumeMounts:
 {% for pvc in pvcs %}
-    - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_name }}"
-      name: {{ pvc.pvc_name }}
+    - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_name | replace('.','-') }}"
+      name: {{ pvc.pvc_name | replace('.','-') }}
 {% endfor %}
     securityContext:
       privileged: true

@@ -15,7 +15,7 @@
 
 - set_fact:
     mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
-    mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_name }}"
+    mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_name | replace('.','-') }}"
     mig_source_data_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_data_location_k8s_mount }}/{{ volume_name }}/"
     mig_source_host: "{{ node_name }}"
     mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
