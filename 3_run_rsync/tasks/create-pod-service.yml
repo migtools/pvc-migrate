@@ -84,6 +84,19 @@
   retries: "{{ transfer_svc_wait_retries }}"
   delay: 3
 
+- name: "Generate certs for stunnel"
+  shell: ./scripts/setup-stunnel.sh
+
+- name: "Get stunnel crt"
+  slurp:
+    src: ./tls.crt
+  register: stunnel_crt
+
+- name: "Get stunnel key"
+  slurp:
+    src: ./tls.key
+  register: stunnel_key
+
 - set_fact:
     failed_pvcs: []
     successful_pvcs: []

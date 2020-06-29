@@ -24,7 +24,7 @@ spec:
     imagePullPolicy: Always
     image: {{ transfer_pod_image }}
     ports:
-    - containerPort: 2222
+    - containerPort: 22
       name: ssh
       protocol: TCP
     volumeMounts:
@@ -38,3 +38,22 @@ spec:
     env:
     - name: SSH_PUBLIC_KEY
       value: "{{ ssh_public_key['content'] | b64decode }}"
+  - name: stunnel
+    imagePullPolicy: Always
+    image: {{ transfer_pod_image }}
+    ports:
+      - containerPort: 2222
+        name: stunnel
+        protocol: TCP
+    securityContext:
+      privileged: true
+      runAsUser: 0
+    env:
+      - name: crt
+        value: "{{ stunnel_crt['content'] }}"
+      - name: key
+        value: "{{ stunnel_key['content'] }}"
+    command:
+      - bash
+      - -c
+      - "echo $crt|base64 -d > /etc/stunnel/tls.crt && echo $key|base64 -d > /etc/stunnel/tls.key && exec /bin/stunnel /etc/stunnel/stunnel.conf"
