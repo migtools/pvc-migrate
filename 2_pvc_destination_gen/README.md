@@ -10,7 +10,8 @@ cp vars/pvc-destination-gen.yml.example vars/pvc-destination-gen.yml
 cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 ```
 
-2. Edit storage class mappings in `vars/storage-class-mappings.yml` as needed.
+2. Edit storage class mappings in `vars/storage-class-mappings.yml` as needed, following directions in [sc-selection.md](../docs/sc-selection.md)
+
 
 3. Run playbook while KUBECONFIG is set for connection to **destination cluster**
 ```
