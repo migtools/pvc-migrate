@@ -23,6 +23,28 @@ git clone https://github.com/konveyor/pvc-migrate && cd pvc-migrate
 
 ### 2. Automation prerequisites
 
+#### Virtualenv 
+ * Installing Virtualenv
+    ```
+    python3 -m pip install --user virtualenv
+    python3 -m venv env
+
+    ```
+
+ * Activate Virtualenv and install requirements
+    ```
+    source env/bin/activate
+    pip install -r requirements.txt
+   
+    ```
+
+ * To update any requirements
+    ```
+    pip freeze &> requirements.txt
+    ``` 
+
+#### Without Virtualenv
+
 ```
 pip3 install ansible==2.9.7 --user      # ansible 2.9
 pip3 install kubernetes==11.0.0 --user  # kubernetes module for ansible
