@@ -6,8 +6,7 @@ a LoadBalancer service through which we can run ssh/scp/rsync externally
 ## Usage:
 
 1. Ensure you have followed steps in [inventory-notes.md](../docs/inventory-notes.md) 
-   1. Complete SSH Configuration 
-   1. Fill out Ansible Host Inventory
+   1. Complete SSH and Ansible Configuration 
 
 2. Create your own copy of vars file 
 ```
