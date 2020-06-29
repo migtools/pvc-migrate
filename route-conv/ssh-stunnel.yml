@@ -1,0 +1,275 @@
+# This is an example for configuring a Kubernetes deployment to provide SSH
+# access to an OpenShift cluster.  The deployment runs OpenSSH and stunnel.
+# SSH clients connect through an OpenShift passthrough route using stunnel.
+#
+# Example usage:
+#
+# Create a host key-pair for sshd:
+#
+#     /bin/ssh-keygen -q -t rsa -f ssh_host_rsa_key -C '' -N ''
+#
+# Create a TLS key and certificate for stunnel:
+#
+#     make -f /etc/pki/tls/certs/Makefile ./stunnel.pem
+#     openssl x509 -in stunnel.pem -out stunnel-crt.pem
+#     openssl pkey -in stunnel.pem -out stunnel-key.pem
+#
+# Create secrets with the host key-pair and the stunnel key and certificate:
+#
+#     oc -n default create secret generic sshd-host-keys --from-file=ssh_host_rsa_key --from-file=ssh_host_rsa_key.pub
+#     oc -n default create secret tls stunnel-certs --cert=stunnel-crt.pem --key=stunnel-key.pem
+#
+# Create a configmap with an authorized SSH public key or keys:
+#
+#     oc -n default create configmap ssh-authorized-keys --from-file=authorized_keys=$HOME/.ssh/id_rsa.pub
+#
+# Create the deployment and related resources for sshd and stunnel:
+#
+#     oc -n default apply -f stunnel.yaml
+#
+# Write the stunnel client configuration file (note: replace the host name in
+# the connect setting with the host name from the "ssh" route created in the
+# previous step):
+#
+#     cat > ./stunnel-client.conf <<'EOF'
+#     client=yes
+#     foreground = yes
+#     pid = 
+#     sslVersion = TLSv1.2
+#     syslog = no
+#     
+#     [ssh]
+#     CAfile = ./stunnel-crt.pem
+#     accept = 2222
+#     cert = ./stunnel-crt.pem
+#     connect = ssh-default.apps.ci-ln-pw141ct-d5d6b.origin-ci-int-aws.dev.rhcloud.com:443
+#     key = ./stunnel-key.pem
+#     verify = 2
+#     EOF
+#
+# Start the stunnel client:
+#
+#     stunnel ./stunnel-client.conf
+#
+# Connect to the local stunnel endpoint using ssh:
+#
+#     ssh root@127.0.0.1 -p 2222 -i ~/.ssh/id_rsa
+#
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: stunnel
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: stunnel:latest
+    source:
+      type: Dockerfile
+      dockerfile: |
+        FROM centos:7
+        RUN yum -y --setopt=skip_missing_names_on_install=False install stunnel && \
+            mkdir -p /etc/stunnel/conf /etc/stunnel/certs
+        CMD id && ls -lRZ /etc/stunnel && exec /bin/stunnel /etc/stunnel/conf/stunnel.conf
+    strategy:
+      type: Docker
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: openssh
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: openssh:latest
+    source:
+      type: Dockerfile
+      dockerfile: |
+        FROM centos:7
+        RUN yum -y --setopt=skip_missing_names_on_install=False install openssh-server && \
+            mkdir -p /etc/ssh/conf /etc/ssh/keys
+        CMD id && ls -lRZ /etc/ssh && exec /sbin/sshd -D -e -f /etc/ssh/conf/sshd_config
+    strategy:
+      type: Docker
+    triggers:
+    - type: ConfigChange
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: stunnel
+  spec:
+    tags:
+    - name: latest
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: openssh
+  spec:
+    tags:
+    - name: latest
+- apiVersion: v1
+  data:
+    sshd_config: |
+      ChallengeResponseAuthentication no
+      GSSAPIAuthentication yes
+      GSSAPICleanupCredentials no
+      HostKey /etc/ssh/keys/ssh_host_rsa_key
+      PasswordAuthentication no
+      PermitRootLogin yes
+      StrictModes no
+      UsePAM yes
+  kind: ConfigMap
+  metadata:
+    name: sshd-conf
+- apiVersion: v1
+  data:
+    stunnel.conf: |
+      foreground = yes
+      pid = 
+      socket = l:TCP_NODELAY=1
+      socket = r:TCP_NODELAY=1
+      sslVersion = TLSv1.2
+      
+      [ssh]
+      TIMEOUTclose = 0
+      accept = 2222
+      cert = /etc/stunnel/certs/tls.crt
+      connect = 22
+      key = /etc/stunnel/certs/tls.key
+  kind: ConfigMap
+  metadata:
+    name: stunnel-conf
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: ssh
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: ssh
+    template:
+      metadata:
+        labels:
+          app: ssh
+      spec:
+        containers:
+        - image: image-registry.openshift-image-registry.svc:5000/default/stunnel:latest
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 2222
+            timeoutSeconds: 1
+          name: stunnel
+          ports:
+          - containerPort: 2222
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 2222
+            timeoutSeconds: 1
+          volumeMounts:
+          - name: stunnel-conf
+            mountPath: /etc/stunnel/conf
+          - name: stunnel-certs
+            mountPath: /etc/stunnel/certs
+        - image: image-registry.openshift-image-registry.svc:5000/default/openssh:latest
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 22
+            timeoutSeconds: 1
+          name: openssh
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 22
+            timeoutSeconds: 1
+          securityContext:
+            privileged: true
+          volumeMounts:
+          - name: sshd-conf
+            mountPath: /etc/ssh/conf
+          - name: sshd-host-keys
+            mountPath: /etc/ssh/keys
+          - name: ssh-authorized-keys
+            mountPath: /root/.ssh
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: sshd-conf
+          configMap:
+            defaultMode: 256
+            items:
+            - key: sshd_config
+              path: sshd_config
+            name: sshd-conf
+        - name: sshd-host-keys
+          secret:
+            defaultMode: 256
+            secretName: sshd-host-keys
+        - name: ssh-authorized-keys
+          configMap:
+            defaultMode: 384
+            items:
+            name: ssh-authorized-keys
+        - name: stunnel-certs
+          secret:
+            defaultMode: 256
+            secretName: stunnel-certs
+        - name: stunnel-conf
+          configMap:
+            defaultMode: 256
+            items:
+            - key: stunnel.conf
+              path: stunnel.conf
+            name: stunnel-conf
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      app: ssh
+    name: ssh
+  spec:
+    port:
+      targetPort: 2222-tcp
+    tls:
+      termination: passthrough
+    to:
+      kind: Service
+      name: ssh
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ssh
+    name: ssh
+  spec:
+    ports:
+    - name: 2222-tcp
+      port: 2222
+      protocol: TCP
+      targetPort: 2222
+    selector:
+      app: ssh
+    sessionAffinity: None
+    type: ClusterIP
