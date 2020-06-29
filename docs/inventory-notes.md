@@ -21,7 +21,6 @@ Therefore, `pvc-migrate` needs to be able to connect with every node on the sour
 1. *Ansible Control Node* host needs *SSH access* to _all_ the OpenShift Nodes on source cluster
    1. If OpenShift Nodes are not accessible from the internet, `pvc-migrate` can connect through a bastion host. 
    
-   
 1. *Ansible Control Node* host needs *SSH access* to *dummy sync Pods* created on the destination cluster. 
    1. Users need to build their own container image for *dummy sync Pods*, the Dockerfile and the instructions to build new docker image can be found [here](../2_pvc_destination_gen/extras/container/Dockerfile)
 
@@ -29,8 +28,6 @@ Therefore, `pvc-migrate` needs to be able to connect with every node on the sour
 
 - Set SSH config (~/.ssh/config) on the host where `ansible-playbook` will be invoked
 - Set Ansible config (ansible.cfg) on the host where `ansible-playbook` will be invoked
-
-For both modes of operation, set 
 
 ### **Mode 1**: Running 'ansible-playbook' from Bastion Host
 
