@@ -52,7 +52,7 @@
     state: present
     definition: "{{ lookup('template', 'pod.yml.j2') }}"
 
-- name: "Create a service for rsync"
+- name: "Create a route for rsync"
   k8s:
     state: present
     definition: "{{ lookup('template', 'svc.yml.j2') }}"
@@ -76,13 +76,20 @@
     namespace: "{{ pvc_namespace }}"
   register: svc
   until: " svc.resources is defined
-            and svc.resources[0].status is defined
-            and svc.resources[0].status.loadBalancer is defined
-            and svc.resources[0].status.loadBalancer.ingress is defined
-            and (svc.resources[0].status.loadBalancer.ingress | length) == 1
-            and svc.resources[0].status.loadBalancer.ingress[0].hostname is defined"
+            and svc.resources[0].status is defined"
   retries: "{{ transfer_svc_wait_retries }}"
   delay: 3
+
+- name: "Wait for route to get hostname"
+  k8s_facts:
+    api_version: route.openshift.io/v1
+    kind: route
+    name: "{{ route_name }}"
+    namespace: "{{ pvc_namespace }}"
+  register: rsync_route
+  until: " rsync_route.resources is defined
+          and rsync_route.resources[0].spec is defined
+          and rsync_route.resources[0].spec.host is defined"
 
 - name: "Generate certs for stunnel"
   shell: ./scripts/setup-stunnel.sh
