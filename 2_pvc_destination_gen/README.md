@@ -6,12 +6,18 @@ This playbook takes the input from [Stage 1](../1_pvc_data_gen) and creates PVC 
 
 1. Create your own copy of vars file 
 ```
-cp vars/pvc-destination-gen.yml.example vars/pvc-destination-gen.yml
 cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 ```
 
-2. Edit storage class mappings in `vars/storage-class-mappings.yml` as needed, following directions in [sc-selection.md](../docs/sc-selection.md)
+2. Set storage class mappings in `vars/storage-class-mappings.yml`, following directions in [sc-selection.md](../docs/sc-selection.md)
 
+```
+# Sample mappings for glusterfs -> cephfs migration
+mig_storage_class_mappings:
+  glusterfs-storage_RWO: ocs-storagecluster-ceph-rbd
+  glusterfs-storage_RWX: ocs-storagecluster-cephfs
+  glusterfs-storage-block_RWO: ocs_storagecluster-ceph-rbd
+```
 
 3. Run playbook while KUBECONFIG is set for connection to **destination cluster**
 ```

@@ -1,2 +1,11 @@
+auth
+.idea
+output
 output/*.json
+env
+1_pvc_data_gen/vars/pvc-data-gen.yml
+2_pvc_destination_gen/vars/pvc-destination-gen.yml
+2_pvc_destination_gen/vars/storage-class-mappings.yml
+3_run_rsync/vars/run-rsync.yml
+3_run_rsync/vars/storage-class-mappings.yml
 

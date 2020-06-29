@@ -1,6 +1,12 @@
-pvc_data_filepath: ../output/pvc-data.json
-namespace_data_filepath: ../output/namespaces-data.json
-transfer_pod_image: quay.io/pranavgaikwad/ssh-centos:latest
-rsync_public_key_filepath: /tmp/ssl/public/rsync-pod-public.pub
-failed_pvcs_filepath: ../output/failed-pvcs.json
-successful_pvcs_filepath: ../output/successful-pvcs.json
+# Destination cluster 'transfer pod' resource limits
+transfer_pod_cpu_limits: '1'
+transfer_pod_cpu_requests: '100m'
+transfer_pod_mem_limits: '1Gi'
+transfer_pod_mem_requests: '1Gi'
+
+# Destination cluster 'transfer pod' SSH auth info
+mig_dest_ssh_public_key: ""  # path to public key to install as authorized user in transfer pod
+mig_dest_ssh_private_key: "" # path to private key used for SSH auth into transfer pod as 'root' user
+
+# Wait for transfer pod service ELB deletion to complete before proceeding to next PVC
+wait_for_finalizer: false

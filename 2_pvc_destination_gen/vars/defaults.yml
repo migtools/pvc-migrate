@@ -1,2 +1,3 @@
+# Stage 2 Input
 pvc_data_filepath: ../output/pvc-data.json
 namespace_data_filepath: ../output/namespace-data.json
