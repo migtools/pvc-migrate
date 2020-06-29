@@ -35,7 +35,7 @@
 
 - set_fact:
     transfer_pod_wait_retries: 200
-    transfer_svc_wait_retries: 200
+    transfer_svc_wait_retries: 600
     transfer_pod_delete_wait_retries: 200
     transfer_svc_delete_wait_retries: 200
 
@@ -68,7 +68,7 @@
   retries: "{{ transfer_pod_wait_retries }}"
   delay: 3
 
-- name: "Wait for svc to get a load balancer IP"
+- name: "Wait for svc to get a load balancer hostname"
   k8s_facts:
     api_version: v1
     kind: service
