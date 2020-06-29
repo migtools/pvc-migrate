@@ -1,12 +1,15 @@
 # Storage Class Selection
 
-`Stage-2` of `pvc-migrate` is responsible for migrating PVCs to destination. 
+**Stage 2** of `pvc-migrate` is responsible for migrating PVCs to destination. 
 
-While migrating PVCs, `pvc-migrate` cannot automatically choose the correct StorageClass (SC) for migrated PVCs on the destination side. For instance, an RWO mode PV using `glusterfs-storage` on an OpenShift 3.x cluster typically corresponds to `cephrbd` SC on destination. On the other hand, an RWX mode PV on `glusterfs-storage` corresponds to `cephfs` SC on the destination side. 
+While migrating PVCs, `pvc-migrate` cannot automatically choose the correct StorageClass (SC) for migrated PVCs on the destination side. As examples of such mappings:
 
-`pvc-migrate` ___cannot___ automatically determine the desired conversion between Storage Classes. You must provide a static mapping of StorageClass names between the source and the destination cluster.
+- **RWO mode PV** on OCP 3.x with SC `glusterfs-storage` typically maps to `cephrbd` SC on OCP 4.x destination.
+- **RWX mode PV** on OCP 3.x with SC `glusterfs-storage` typically maps to `cephfs` SC on OCP 4.x destination. 
 
-See an example mapping below :
+Since `pvc-migrate` ___cannot___ automatically determine the desired conversion between Storage Classes. You must provide a static mapping of StorageClass names between the source and the destination cluster.
+
+### Example mapping from `storage-class-mappings.yml`:
 
 ```yml
 mig_storage_class_mappings:
@@ -15,16 +18,16 @@ mig_storage_class_mappings:
   glusterfs-storage-block_RWO: ocs_storagecluster-ceph-rbd
 ``` 
 
-Each key-value pair in the above map follows the following format :
-
+The sample above follows this general format:
 ```yml
 mig_storage_class_mappings:
   <SC-NAME-ON-SOURCE>_<MODE>: <SC-NAME-ON-DESTINATION> 
 ```
 
-If a valid mapping is not found, `pvc-migrate` will simply retain the original StorageClass in the migrated PVC, which may result in a failure. 
+### Mapping Behavior
 
-If a PVC doesn't have any StorageClass assigned, migrated PVC will use the `default` StorageClass on the destination. 
+- If an applicable mapping is not found, `pvc-migrate` will retain the original StorageClass in the migrated PVC, which may result in a failure. 
+- If a PVC doesn't have any StorageClass assigned, the migrated PVC will use the `default` StorageClass on the destination. 
 
 ## Required Steps for Stage 2
 
