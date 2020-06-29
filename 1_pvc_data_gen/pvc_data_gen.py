@@ -17,13 +17,25 @@ except:
     print("\n[!] Failed while setting up OpenShift client. Ensure KUBECONFIG is set. ")
     exit(1)
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
+# Ensure KUBECONFIG is set to source cluster by checking for OpenShift v3 in version endpoint
+try:
+    kube_minor_version = dyn_client.version.get("kubernetes", {}).get("minor", "").split("+")[0]
+    if int(kube_minor_version) > 11:
+        print("\n[!] [WARNING] KUBECONFIG should be set to source cluster (likely OCP 3.x) for 'Stage 1', but OCP 4.x cluster detected.")
+        print("[!] [WARNING] Detected k8s version: {}\n".format(dyn_client.version.get("kubernetes", {}).get("gitVersion", "")))
+        selection = input("[?] Press 'Enter' to quit, or type 'i' to ignore warning: ")
+        if 'i' not in selection:
+            print("Exiting...")
+            os._exit(1)
+except:
+    print("[!] Failed to parse OpenShift version.")
 
-# Using this as a workaround to handle empty results
+# Object serving as 'get' default for empty results
 class EmptyK8sResult:
     __dict__ = {}
 emptyDict = EmptyK8sResult()
 
+# Make output dir if doesn't exist
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -45,7 +57,7 @@ for namespace in data['namespaces_to_migrate']:
         ns_out = {'namespace': namespace, 'annotations': ns.metadata.get("annotations", emptyDict).__dict__}
         output.append(ns_out)
     except:
-        print("\n[!] v1/namespace not found: " + namespace)
+        print("\n[WARNING] v1/namespace not found: {}\n".format(namespace))
     
 ns_data_file = os.path.join(output_dir, 'namespace-data.json')
 with open(ns_data_file, 'w') as f:
@@ -90,8 +102,6 @@ for namespace in data['namespaces_to_migrate']:
                                 boundPodMountPath = vol_mount.get("mountPath", "")
                                 boundPodMountContainerName = container.get('name', "")
                                 break
-
-
                     break
             if pvc_pod != None:
                 break
