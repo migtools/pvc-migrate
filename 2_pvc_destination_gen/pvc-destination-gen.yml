@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   vars_files:
-    - vars/pvc-destination-gen.yml
+    - vars/defaults.yml
     - vars/storage-class-mappings.yml
   tasks:
     - name: Verify required variables are defined

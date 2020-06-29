@@ -2,6 +2,7 @@
 - hosts: localhost
   vars_files:
     - vars/run-rsync.yml
+    - vars/defaults.yml
   tasks:
     - name: "Verify required variables are defined"
       assert:
