@@ -14,7 +14,7 @@
     mig_source_data_location_k8s_mount: "kubernetes.io~glusterfs"
 
 - set_fact:
-    mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+    mig_dest_service_url: "{{ rsync_route.resources[0].spec.host }}"
     mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_vol_safe_name }}"
     mig_source_data_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_data_location_k8s_mount }}/{{ volume_name }}/"
     mig_source_host: "{{ node_name }}"
@@ -43,7 +43,7 @@
           accept = 2222
           CAFile = /etc/stunnel/tls.crt
           cert = /etc/stunnel/tls.crt
-          connect = {{ route.resources[0].spec.host }}:443
+          connect = {{ mig_dest_service_url }}:443
           verify = 2
           key = /etc/stunnel/tls.key
         dest: /etc/stunnel/stunnel.conf
@@ -126,7 +126,7 @@
         rc: "{{ sync_output.rc }}"
   set_fact:
     failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
-  when: sync_output is not defined or 
+  when: sync_output is not defined or
     sync_output.rc != 0
 
 - name: "Collect successful pvcs"
@@ -137,5 +137,5 @@
   set_fact:
     successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
   when:
-    - sync_output is defined 
+    - sync_output is defined
     - sync_output.rc == 0
