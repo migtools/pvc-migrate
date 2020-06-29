@@ -1,4 +1,4 @@
-# Stage 3: Configuring SSH and Inventory
+# Stage 3: Configuring SSH and Ansible for PVC data copy
 
 **Stage 3** of `pvc-migrate` runs `rsync` to synchronize data between the source and the destination cluster PVCs.
 
