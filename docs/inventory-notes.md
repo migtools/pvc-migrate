@@ -28,7 +28,11 @@ Therefore, `pvc-migrate` needs to be able to connect with every node on the sour
 - Set SSH config (~/.ssh/config) on the host where `ansible-playbook` will be invoked
 - Set Ansible config (ansible.cfg) on the host where `ansible-playbook` will be invoked
 
-### **Mode 1**: Running 'ansible-playbook' from Bastion Host
+### **Mode 1**: Running 'ansible-playbook' on Bastion
+
+```
+[Bastion] ➡️ SSH ➡️ [OCP 3.x Node] ➡️ RSync ➡️ [OCP 4.x Transfer Pod]
+```
 
 Set these configuration values on the Bastion host.
 
@@ -49,7 +53,11 @@ ssh_args = -F ${HOME}/.ssh/config -o ControlMaster=auto -o ControlPersist=5m
 control_path = ${HOME}/.ssh/ansible-%%r@%%h:%%p
 ```
 
-### **Mode 2**: Running 'ansible-playbook' from External Host
+### **Mode 2**: Running 'ansible-playbook' on External Host *proxying through* Bastion
+
+```
+[External Host] ➡️ SSH Proxy ➡️ [Bastion] ➡️ SSH ➡️ [OCP 3.x Node] ➡️ RSync ➡️ [OCP 4.x Transfer Pod]
+```
 
 Set these configuration values on the External host.
 
