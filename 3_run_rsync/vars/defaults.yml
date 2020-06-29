@@ -5,3 +5,6 @@ namespace_data_filepath: ../output/namespace-data.json
 # Stage 3 Output
 failed_pvcs_dir: ../output/
 successful_pvcs_dir: ../output/
+
+# Recommended Transfer Pod Image
+transfer_pod_image: "quay.io/konveyor/ssh-transfer:latest"
