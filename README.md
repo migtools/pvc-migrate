@@ -28,14 +28,12 @@ git clone https://github.com/konveyor/pvc-migrate && cd pvc-migrate
     ```
     python3 -m pip install --user virtualenv
     python3 -m venv env
-
     ```
 
  * Activate Virtualenv and install requirements
     ```
     source env/bin/activate
     pip install -r requirements.txt
-   
     ```
 
  * To update any requirements
