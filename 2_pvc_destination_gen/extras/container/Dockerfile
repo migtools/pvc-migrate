@@ -1,13 +1,4 @@
-from centos:latest
-
-ENV USER_NAME=ssh \
-    USER_UID=1001 \
-    HOME=/opt/ssh
-
-RUN dnf -y install openssh-server nss_wrapper rsync && dnf clean all
-RUN chmod -R 777 /etc/ssh /opt
-
-EXPOSE 2222
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-CMD /usr/local/bin/entrypoint.sh
+FROM centos:latest
+RUN dnf -y install openssh-server stunnel rsync && dnf clean all
+COPY sshd_config /etc/ssh/sshd_config
+COPY stunnel.conf /etc/stunnel/stunnel.conf
