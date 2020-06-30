@@ -8,9 +8,9 @@ metadata:
 spec:
   ports:
   - name: ssh
-    port: 22
+    port: 2222
     protocol: TCP
-    targetPort: 22
+    targetPort: 2222
   selector:
     app: {{ pod_name }}
   type: ClusterIP
@@ -25,7 +25,7 @@ metadata:
 spec:
   to:
     kind: Service
-    name: ssh
+    name: {{ svc_name }}
   port:
     targetPort: 2222
   tls:

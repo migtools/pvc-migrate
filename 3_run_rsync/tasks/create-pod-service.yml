@@ -44,6 +44,19 @@
     src: "{{ mig_dest_ssh_public_key }}"
   register: ssh_public_key
 
+- name: "Generate certs for stunnel"
+  shell: ./scripts/setup-stunnel.sh
+
+- name: "Get stunnel crt"
+  slurp:
+    src: ./scripts/tls.crt
+  register: stunnel_crt
+
+- name: "Get stunnel key"
+  slurp:
+    src: ./scripts/tls.key
+  register: stunnel_key
+
 - debug:
     msg: "{{ lookup('template', 'pod.yml.j2') }}"
 
@@ -90,19 +103,6 @@
   until: " rsync_route.resources is defined
           and rsync_route.resources[0].spec is defined
           and rsync_route.resources[0].spec.host is defined"
-
-- name: "Generate certs for stunnel"
-  shell: ./scripts/setup-stunnel.sh
-
-- name: "Get stunnel crt"
-  slurp:
-    src: ./tls.crt
-  register: stunnel_crt
-
-- name: "Get stunnel key"
-  slurp:
-    src: ./tls.key
-  register: stunnel_key
 
 - set_fact:
     failed_pvcs: []
