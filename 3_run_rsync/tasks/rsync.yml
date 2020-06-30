@@ -80,9 +80,10 @@
         become: true
 
     - name: "Start stunnel"
-      systemd: "stunnel"
-      state: restarted
-      daemon_reload: yes
+      systemd:
+        name: "stunnel"
+        state: restarted
+        daemon_reload: yes
 
 
     - fail:
@@ -138,8 +139,9 @@
     become: yes
 
   - name: "Stop stunnel"
-    systemd: "stunnel"
-    state: stopped
+    systemd:
+      name: "stunnel"
+      state: stopped
 
 - name: "Collect failed pvcs"
   vars:
