@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ namespace }}
+{% for i in range(number_of_files) %}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "pvc-{{ i }}"
+  namespace: {{ namespace }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ pvc_size }}
+{% endfor %}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-migrate-bmark
+  namespace: {{ namespace }}
+spec:
+  volumes:
+{% for i in range(number_of_files) %}
+  - name: "vol-{{ i }}" 
+    persistentVolumeClaim:
+      claimName: "pvc-{{ i }}"
+{% endfor %}
+  containers:
+  - name: data-gen-bmark
+    imagePullPolicy: Always
+    image: {{ image }}
+    volumeMounts:
+{% for i in range(number_of_files) %}
+    - mountPath: "/mnt/mounts/mnt{{ i }}"
+      name: "vol-{{ i }}"
+{% endfor %}
+    env:
+    - name: GENERATE_SAMPLE_DATA
+      value: "Y"
+    - name: NO_FILES
+      value: "{{ number_of_files }}"
+    - name: FILE_SIZE
+      value: "{{ file_size }}"

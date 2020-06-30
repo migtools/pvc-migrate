@@ -4,7 +4,7 @@
 [[ -z "${GENERATE_SAMPLE_DATA}" ]] && GenerateSampleData="N" || GenerateSampleData="${GENERATE_SAMPLE_DATA}"
 
 # How many volume mounts at location /opt/mounts
-[[ -z "${NO_FILES}" ]] && NumberOfMounts="3" || NumberOfMounts="${NO_MOUNTS}"
+[[ -z "${NO_FILES}" ]] && NumberOfMounts="3" || NumberOfMounts="${NO_FILES}"
 
 # File size created upon startup
 [[ -z "${FILE_SIZE}" ]] && FileSize="1024M" || FileSize="${FILE_SIZE}"

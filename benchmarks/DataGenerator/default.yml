@@ -1,0 +1,16 @@
+# how many sample files to create ?
+# each file is stored in its own PV 
+# new PVCs will be created to accomodate the files
+number_of_files: 3
+
+# size of the PVCs to be created to store sample files
+pvc_size: 11Gi
+
+# size of the file
+file_size: 10G
+
+namespace: pvc-migrate-bmark
+
+destroy: false
+
+
