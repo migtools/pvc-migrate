@@ -51,22 +51,24 @@
 
     - name: "Write tls.crt"
       copy:
-        content: "{{ crt['content']|b64decode }}"
+        content: "{{ stunnel_crt['content']|b64decode }}"
         dest: /etc/stunnel/tls.crt
       become: true
 
     - name: "Write tls.key"
       copy:
-        content: "{{ key['content']|b64decode }}"
+        content: "{{ stunnel_key['content']|b64decode }}"
         dest: /etc/stunnel/tls.key
         mode: 0600
       become: true
 
     - name: "Start stunnel"
-      systemd:
-        state: started
-        name: stunnel
+      shell: "stunnel /etc/stunnel/stunnel.conf"
+      register: stunnel_output
       become: true
+
+    - fail:
+      when: stunnel_output.rc != 0
 
 - delegate_to: "{{ mig_source_host|mandatory }}"
   ignore_errors: true

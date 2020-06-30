@@ -15,7 +15,7 @@ spec:
       claimName: {{ pvc.pvc_name }}
 {% endfor %}
   containers:
-  - name: rsync
+  - name: ssh
     resources:
       limits:
         cpu: {{ transfer_pod_cpu_limits }}
@@ -24,6 +24,10 @@ spec:
         cpu: {{ transfer_pod_cpu_requests }}
         memory: {{ transfer_pod_mem_requests }}
     imagePullPolicy: Always
+    command:
+      - bash
+      - -c
+      - "mkdir /root/.ssh && echo ${SSH_PUBLIC_KEY} > ${HOME}/.ssh/authorized_keys && chmod 600 ${HOME}/.ssh/authorized_keys && /usr/bin/ssh-keygen -A && exec /sbin/sshd -D"
     image: {{ transfer_pod_image }}
     ports:
     - containerPort: 22
