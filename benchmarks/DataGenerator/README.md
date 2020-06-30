@@ -30,8 +30,6 @@ The container exposes different configuration options as environment variables :
 
 The Ansible playbook `playbook.yml` helps create / delete the benchmark pod on OpenShift cluster using Konveyor's image.
 
-Before deploying the pod, make sure you have built a container image.
-
 `default.yml` contains default configuration used for the pod. 
 
 To deploy the pod on cluster, login to your OpenShift cluster using `oc login`
