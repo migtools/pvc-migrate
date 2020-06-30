@@ -2,6 +2,8 @@
 
 This is a sample shell app that generates data files of arbitrary sizes.
 
+It creates one file of specified size per PV.
+
 ## Container
 
 ### Building the container
@@ -46,4 +48,4 @@ To delete the pod :
 ansible-playbook playbook.yml -e image=<IMG> -e destroy=true
 ```
 
-
+Note that the environment variables exposed by the container are passed to the playbook as variables. 

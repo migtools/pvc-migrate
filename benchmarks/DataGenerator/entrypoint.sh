@@ -24,5 +24,3 @@ else
 fi
 
 /usr/bin/sleep infinity
-
-

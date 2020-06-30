@@ -41,7 +41,7 @@ spec:
 {% endfor %}
     env:
     - name: GENERATE_SAMPLE_DATA
-      value: "Y"
+      value: "{{ generate_sample_data }}"
     - name: NO_FILES
       value: "{{ number_of_files }}"
     - name: FILE_SIZE
