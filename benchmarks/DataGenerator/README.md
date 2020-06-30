@@ -12,7 +12,7 @@ To build the app :
 docker build -f Dockerfile -t <IMG> .
 ```
 
-# Container Usage 
+### Container Usage 
 
 The container creates files upon startup and sleeps infinitely. 
 
