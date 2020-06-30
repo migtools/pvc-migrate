@@ -25,6 +25,14 @@
           pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
           namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
 
+    - name: "Generate certs for stunnel"
+      shell: ./scripts/setup-stunnel.sh
+      args:
+        creates: ./scripts/tls.crt
+      register: stunnel_cert_generation
+
+    - fail:
+      when: stunnel_cert_generation.rc != 0
 
     - name: "Create pod and service"
       vars:
