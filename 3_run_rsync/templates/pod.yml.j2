@@ -40,6 +40,7 @@ spec:
 {% endfor %}
     securityContext:
       privileged: true
+      readOnlyRootFilesystem: false
       runAsUser: 0
     env:
     - name: SSH_PUBLIC_KEY
@@ -53,6 +54,7 @@ spec:
         protocol: TCP
     securityContext:
       privileged: true
+      readOnlyRootFilesystem: false
       runAsUser: 0
     env:
       - name: crt
