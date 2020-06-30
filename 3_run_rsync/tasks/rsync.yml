@@ -62,10 +62,28 @@
         mode: 0600
       become: true
 
+    - name: "Write stunnel.conf"
+      copy:
+        content: |
+          [Unit]
+          Description=TLS tunnel for network daemons
+          After=syslog.target network.target
+
+          [Service]
+          ExecStart=/usr/bin/stunnel
+          Type=forking
+          PrivateTmp=true
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/stunnel/stunnel.conf
+        become: true
+
     - name: "Start stunnel"
-      shell: "stunnel /etc/stunnel/stunnel.conf"
-      register: stunnel_output
-      become: true
+      systemd: "stunnel"
+      state: restarted
+      daemon_reload: yes
+
 
     - fail:
       when: stunnel_output.rc != 0
@@ -117,6 +135,10 @@
       path: "{{ mig_dest_ssh_key_remote_location }}"
       state: absent
     become: yes
+
+  - name: "Stop stunnel"
+    systemd: "stunnel"
+    state: stopped
 
 - name: "Collect failed pvcs"
   vars:

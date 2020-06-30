@@ -44,17 +44,17 @@
     src: "{{ mig_dest_ssh_public_key }}"
   register: ssh_public_key
 
-- name: "Generate certs for stunnel"
-  shell: ./scripts/setup-stunnel.sh
+#- name: "Generate certs for stunnel"
+#  shell: ./scripts/setup-stunnel.sh
 
 - name: "Get stunnel crt"
   slurp:
-    src: ./scripts/tls.crt
+    src: "{{ stunnel_cert_filepath }}"
   register: stunnel_crt
 
 - name: "Get stunnel key"
   slurp:
-    src: ./scripts/tls.key
+    src: "{{ stunnel_key_filepath }}"
   register: stunnel_key
 
 - debug:
