@@ -62,7 +62,7 @@
         mode: 0600
       become: true
 
-    - name: "Write stunnel.conf"
+    - name: "Write stunnel systemd service unit file"
       copy:
         content: |
           [Unit]
@@ -77,7 +77,7 @@
           [Install]
           WantedBy=multi-user.target
         dest: /etc/stunnel/stunnel.conf
-        become: true
+      become: true
 
     - name: "Start stunnel"
       systemd:
