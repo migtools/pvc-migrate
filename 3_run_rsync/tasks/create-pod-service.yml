@@ -90,6 +90,9 @@
 
 - name: "Run parallel rsync jobs for PVCs in {{ pvc_namespace }}"
   include_tasks: "tasks/rsync.yml"
+  loop: "{{ pvcs | batch(rsync_batch_size) | list }}"
+  loop_control:
+    loop_var: "pvc_batch"
 
 - name: "Cleanup the transfer pod for rsync"
   k8s:
