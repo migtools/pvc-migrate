@@ -20,10 +20,12 @@
     mig_source_host: "{{ node_name }}"
     mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
 
+
 - delegate_to: "{{ mig_source_host|mandatory }}"
+  ignore_errors: true
   tags:
-    - sync_phase
-    - final_phase
+  - sync_phase
+  - final_phase
   block:
     - name: "Install stunnel"
       yum:
@@ -86,12 +88,6 @@
         daemon_reload: yes
       become: true
 
-- delegate_to: "{{ mig_source_host|mandatory }}"
-  ignore_errors: true
-  tags:
-  - sync_phase
-  - final_phase
-  block:
   - name: "Ensure .ssh directory on source node"
     file:
       path: "~/.ssh"
