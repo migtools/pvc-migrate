@@ -76,7 +76,7 @@
 
           [Install]
           WantedBy=multi-user.target
-        dest: /etc/stunnel/stunnel.conf
+        dest: /etc/systemd/system/stunnel.service
       become: true
 
     - name: "Start stunnel"
@@ -84,10 +84,7 @@
         name: "stunnel"
         state: restarted
         daemon_reload: yes
-
-
-    - fail:
-      when: stunnel_output.rc != 0
+      become: true
 
 - delegate_to: "{{ mig_source_host|mandatory }}"
   ignore_errors: true
@@ -131,6 +128,7 @@
     systemd:
       name: "stunnel"
       state: stopped
+    become: true
 
 - name: "Collect failed pvcs"
   vars:
