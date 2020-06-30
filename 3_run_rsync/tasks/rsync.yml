@@ -40,7 +40,7 @@
   with_items: "{{ pvc_batch }}"
   
 
-- name: "Wait for dns"
+- name: "Wait for load balancer DNS entry"
   vars:
     mig_source_host: "{{ item.node_name }}"
     mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
@@ -53,7 +53,7 @@
   delay: 3
   with_items: "{{ pvc_batch }}"
 
-- name: "Synchronizing files. This may take a while..."
+- name: "Synchronizing files. This may take a while... [rsync_batch_size={{ rsync_batch_size }}] "
   async: "{{ rsync_timeout }}"
   register: async_results
   poll: 0
@@ -68,14 +68,14 @@
   become: yes
   with_items: "{{ pvc_batch }}"
 
-- name: Wait for rsync jobs to finish
+- name: "Wait for rsync jobs to finish [rsync_timeout={{ rsync_timeout }}]"
   vars: 
     mig_source_host: "{{ item.item.node_name }}"
   delegate_to: "{{ mig_source_host|mandatory }}"
   async_status: 
     jid: "{{ item.ansible_job_id }}"
-  register: result
-  until: result.finished
+  register: status_result
+  until: status_result.finished
   retries: "{{ (rsync_timeout|int / 5) | int}}"
   delay: 5
   become: yes
@@ -91,26 +91,27 @@
   ignore_errors: true
   become: yes
   with_items: "{{ pvc_batch }}"
-
 # End tasks delegated to source node 
 
-# - name: "Collect failed pvcs"
-#   vars:
-#     failed_pvc:
-#       - name: "{{ pvc_name }}"
-#         namespace: "{{ item.pvc_namespace }}"
-#         stdout: "{{ sync_output.stdout }}"
-#         stderr: "{{ sync_output.stderr }}"
-#         rc: "{{ sync_output.rc }}"
-#   set_fact:
-#     failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
-#   when: sync_output.rc != 0
+- name: "Collect list of failed PVCs from batch"
+  vars:
+    failed_pvc:
+      - name: "{{ item.item.item.pvc_name}}"
+        namespace: "{{ item.item.item.pvc_namespace }}"
+        stdout: "{{ item.stdout }}"
+        stderr: "{{ item.stderr }}"
+        rc: "{{ item.rc }}"
+  set_fact:
+    failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
+  when: item.rc != 0
+  with_items: "{{ status_result.results }}"
 
-# - name: "Collect successful pvcs"
-#   vars:
-#     successful_pvc:
-#       - name: "{{ pvc_name }}"
-#         namespace: "{{ item.pvc_namespace }}"
-#   set_fact:
-#     successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
-#   when: sync_output.rc == 0
+- name: "Collect list of successful PVCs from batch"
+  vars:
+    successful_pvc:
+      - name: "{{ item.item.item.pvc_name}}"
+        namespace: "{{ item.item.item.pvc_namespace }}"
+  set_fact:
+    successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
+  when: item.rc == 0
+  with_items: "{{ status_result.results }}"
