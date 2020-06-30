@@ -88,15 +88,8 @@
     failed_pvcs: []
     successful_pvcs: []
 
-- name: "Run rsync for pvc synchronously"
-  vars:
-    pvc_ns: "{{ item.pvc_namespace }}"
-    pvc_name: "{{ item.pvc_name }}"
-    volume_name: "{{ item.volume_name }}"
-    bound_pod_uid: "{{ item.bound_pod_uid }}"
-    node_name: "{{ item.node_name }}"
+- name: "Run parallel rsync jobs for PVCs in {{ pvc_namespace }}"
   include_tasks: "tasks/rsync.yml"
-  with_items: "{{ pvcs }}"
 
 - name: "Cleanup the transfer pod for rsync"
   k8s:
@@ -114,26 +107,26 @@
   retries: "{{ transfer_pod_delete_wait_retries }}"
   delay: 3
 
-- name: "Cleanup the service for rsync"
-  k8s:
-    state: absent
-    definition: "{{ lookup('template', 'svc.yml.j2') }}"
+# - name: "Cleanup the service for rsync"
+#   k8s:
+#     state: absent
+#     definition: "{{ lookup('template', 'svc.yml.j2') }}"
 
-- name: "Wait for service to be deleted"
-  k8s_info:
-    api_version: v1
-    kind: service
-    name: "{{ svc_name }}"
-    namespace: "{{ pvc_namespace }}"
-  register: s
-  until: "{{ s.resources | length == 0 }}"
-  retries: "{{ transfer_svc_delete_wait_retries }}"
-  delay: 3
-  when: "{{ wait_for_finalizer }}"
+# - name: "Wait for service to be deleted"
+#   k8s_info:
+#     api_version: v1
+#     kind: service
+#     name: "{{ svc_name }}"
+#     namespace: "{{ pvc_namespace }}"
+#   register: s
+#   until: "{{ s.resources | length == 0 }}"
+#   retries: "{{ transfer_svc_delete_wait_retries }}"
+#   delay: 3
+#   when: "{{ wait_for_finalizer }}"
 
-- name: "Printing failed / succeded pvcs"
+- name: "Printing failed / successful PVC rsync jobs"
   debug:
-    msg: "{{ failed_pvcs }} {{ successful_pvcs }}"
+    msg: "Failed: {{ failed_pvcs }} \nSuccessful:{{ successful_pvcs }}"
 
 - name: "Dumping failure report"
   copy:
