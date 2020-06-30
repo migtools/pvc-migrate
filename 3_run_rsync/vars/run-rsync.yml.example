@@ -9,7 +9,7 @@ mig_dest_ssh_public_key: ""  # path to public key to install as authorized user 
 mig_dest_ssh_private_key: "" # path to private key used for SSH auth into transfer pod as 'root' user
 
 # Rsync Options
-rsync_timeout: 7200  # time in seconds, default 1 hour
+rsync_timeout: 7200  # time in seconds, default 2 hours
 rsync_batch_size: 10 # how many rsync jobs should run in parallel
 
 # Wait for transfer pod service ELB deletion to complete before proceeding to next PVC
