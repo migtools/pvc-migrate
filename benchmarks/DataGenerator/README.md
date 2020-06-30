@@ -24,11 +24,11 @@ The container exposes different configuration options as environment variables :
 |------------------------	|---------------	|-------------------------------------------------------------------------------------------------------------------------------------	|
 | `GENERATE_SAMPLE_DATA` 	| N             	| Whether to generate sample files or not?                                                                                            	|
 | `NO_FILES`             	| 3             	| How many sample files to create? Each file  is created in its own directory under  `/opt/mounts/`e.g. `/opt/mounts/mnt1/SampleData` 	|
-| `FILE_SIZE`            	| 1024M         	| Size of the sample files                                                                                                            	|
+| `FILE_SIZE`            	| 1024          	| Size of the sample files in M                                                                                                        	|
 
 ## Deploying on OpenShift 
 
-The Ansible playbook `playbook.yml` helps create / delete the benchmark pod on OpenShift cluster.
+The Ansible playbook `playbook.yml` helps create / delete the benchmark pod on OpenShift cluster using Konveyor's image.
 
 Before deploying the pod, make sure you have built a container image.
 
@@ -39,13 +39,13 @@ To deploy the pod on cluster, login to your OpenShift cluster using `oc login`
 Once logged in, deploy the pod :
 
 ```sh
-ansible-playbook playbook.yml -e image=<IMG>
+ansible-playbook playbook.yml
 ```
 
 To delete the pod : 
 
 ```sh
-ansible-playbook playbook.yml -e image=<IMG> -e destroy=true
+ansible-playbook playbook.yml -e destroy=true
 ```
 
-Note that the environment variables exposed by the container are passed to the playbook as variables. 
+Note that the environment variables exposed by the container are passed to the playbook as variables.

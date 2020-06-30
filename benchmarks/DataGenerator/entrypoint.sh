@@ -7,7 +7,7 @@
 [[ -z "${NO_FILES}" ]] && NumberOfMounts="3" || NumberOfMounts="${NO_FILES}"
 
 # File size created upon startup
-[[ -z "${FILE_SIZE}" ]] && FileSize="1024M" || FileSize="${FILE_SIZE}"
+[[ -z "${FILE_SIZE}" ]] && FileSize="1024" || FileSize="${FILE_SIZE}"
 
 if [[ "${GENERATE_SAMPLE_DATA}" == "Y" ]]
 then
@@ -15,7 +15,7 @@ then
     for i in $( seq 1 $NumberOfMounts )
     do
         /usr/bin/mkdir -p "/opt/mounts/mnt${i}"
-    	/usr/bin/truncate -s ${FileSize} "/opt/mounts/mnt${i}/SampleData"
+    	/usr/bin/dd if=/dev/urandom of="/opt/mounts/mnt${i}/SampleData" bs=1M count=${FileSize}
         echo "Generated sample data at /opt/mounts/mnt${i}"
     done
 else 
