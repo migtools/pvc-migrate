@@ -12,7 +12,7 @@
 if [[ "${GENERATE_SAMPLE_DATA}" == "Y" ]]
 then
     echo "Generating sample data..."
-    for i in $( seq 0 $NumberOfMounts )
+    for i in $( seq 1 $NumberOfMounts )
     do
         /usr/bin/mkdir -p "/opt/mounts/mnt${i}"
     	/usr/bin/truncate -s ${FileSize} "/opt/mounts/mnt${i}/SampleData"
