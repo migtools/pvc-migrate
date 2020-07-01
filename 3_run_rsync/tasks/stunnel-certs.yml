@@ -10,6 +10,7 @@
   openssl_privatekey_info:
     path: "{{ stunnel_key_filepath }}"
   register: stunnel_key
+  when: cert_key_status.results[0].stat.exists
 
 - name: "Check if certificate is valid"
   openssl_certificate_info:
@@ -17,7 +18,7 @@
     valid_at:
       point_1: "+1d"
   register: stunnel_cert
-
+  when: cert_key_status.results[1].stat.exists
 
 - when: not stunnel_cert.valid_at.point_1 or
         not cert_key_status.results[0].stat.exists or
