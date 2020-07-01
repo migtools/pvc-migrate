@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+  - ./default.yml
+  tasks:
+  - name: "{{ 'Deleting benchmark app' if destroy|bool else 'Creating benchmark app' }}"
+    k8s:
+      state: "{{ 'absent' if destroy|bool else 'present' }}"
+      definition: "{{ lookup('template', './manifest.yml.j2') }}"

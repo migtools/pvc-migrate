@@ -1,0 +1,21 @@
+# how many sample files to create ?
+# each file is stored in its own PV 
+# new PVCs will be created to accomodate the files
+# corrsponds with the container env var NO_FILES
+number_of_files: 3
+
+# corresponds with the container env var GENERATE_SAMPLE_DATA
+generate_sample_data: "Y"
+
+# size of the file in 'M' 
+# corresponds with the container env var FILE_SIZE
+file_size: 1024
+
+# size of the PVCs to be created to store sample files
+pvc_size: 2Gi
+
+namespace: pvc-migrate-bmark
+
+image: quay.io/konveyor/pvc-migrate-benchmark-helper:latest
+
+destroy: false
