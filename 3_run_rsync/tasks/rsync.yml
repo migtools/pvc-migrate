@@ -52,7 +52,7 @@
   retries: 100
   delay: 3
   with_items: "{{ pvc_batch }}"
-
+  
 - name: "Synchronizing files. This may take a while... [rsync_batch_size={{ rsync_batch_size }}] "
   async: "{{ rsync_timeout }}"
   register: async_results
@@ -111,6 +111,9 @@
     successful_pvc:
       - name: "{{ item.item.item.pvc_name}}"
         namespace: "{{ item.item.item.pvc_namespace }}"
+        stdout: "{{ item.stdout }}"
+        stderr: "{{ item.stderr }}"
+        rc: "{{ item.rc }}"
   set_fact:
     successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
   when: item.rc == 0

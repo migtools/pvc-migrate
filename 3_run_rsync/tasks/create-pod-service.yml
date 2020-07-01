@@ -88,6 +88,7 @@
     failed_pvcs: []
     successful_pvcs: []
 
+
 - name: "Run parallel rsync jobs for PVCs in {{ pvc_namespace }}"
   include_tasks: "tasks/rsync.yml"
   loop: "{{ pvcs | batch(rsync_batch_size) | list }}"
