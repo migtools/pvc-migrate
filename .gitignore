@@ -9,3 +9,5 @@ env
 3_run_rsync/vars/run-rsync.yml
 3_run_rsync/vars/storage-class-mappings.yml
 
+3_run_rsync/scripts/*.crt
+3_run_rsync/scripts/*.key
