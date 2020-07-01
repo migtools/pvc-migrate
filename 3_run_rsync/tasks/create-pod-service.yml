@@ -44,11 +44,6 @@
     src: "{{ mig_dest_ssh_public_key }}"
   register: ssh_public_key
 
-- name: "Generate certs for stunnel"
-  shell: ./scripts/setup-stunnel.sh
-  args:
-    creates: ./scripts/tls.crt
-
 - name: "Get stunnel crt"
   slurp:
     src: "{{ stunnel_cert_filepath }}"
@@ -83,7 +78,7 @@
   retries: "{{ transfer_pod_wait_retries }}"
   delay: 3
 
-- name: "Wait for svc to get a load balancer hostname"
+- name: "Wait for svc to become ready"
   k8s_info:
     api_version: v1
     kind: service
