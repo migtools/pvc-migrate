@@ -78,7 +78,7 @@
   retries: "{{ transfer_pod_wait_retries }}"
   delay: 3
 
-- name: "Wait for svc to get a load balancer hostname"
+- name: "Wait for svc to become ready"
   k8s_facts:
     api_version: v1
     kind: service
