@@ -44,11 +44,6 @@
     src: "{{ mig_dest_ssh_public_key }}"
   register: ssh_public_key
 
-- name: "Generate certs for stunnel"
-  shell: ./scripts/setup-stunnel.sh
-  args:
-    creates: ./scripts/tls.crt
-
 - name: "Get stunnel crt"
   slurp:
     src: "{{ stunnel_cert_filepath }}"

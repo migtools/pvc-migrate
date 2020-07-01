@@ -23,55 +23,8 @@
           pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
           namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
 
-    - block:
-      - name: "Generating temp files for keys"
-        tempfile:
-          state: file
-          suffix: "{{ item }}"
-        register: temp_files
-        loop:
-        - 'pem'
-        - 'csr'
-        - 'crt'
-
-      - name: "Generating new key"
-        openssl_privatekey:
-          size: 2048
-          path: "{{ temp_files.results[0].path }}"
-
-      - name: "Generating csr"
-        openssl_csr:
-          path: "{{ temp_files.results[1].path }}"
-          privatekey_path: "{{ temp_files.results[0].path }}"
-          country_name: US
-          state_or_province_name: NC
-          organization_name: Migration Engineering
-          common_name: openshift.io
-          locality_name: RDU
-
-      - name: "Generating certificate"
-        openssl_certificate:
-          path: "{{ temp_files.results[2].path }}"
-          privatekey_path: "{{ temp_files.results[0].path }}"
-          csr_path: "{{ temp_files.results[1].path }}"
-          provider: selfsigned
-
-      - copy:
-          src: "{{ item.src }}"
-          dest: "{{ item.dst }}"
-        loop:
-          - src: "{{ temp_files.results[0].path }}"
-            dst: "./scripts/tls.key"
-          - src: "{{ temp_files.results[2].path }}"
-            dst: "./scripts/tls.crt"
-      rescue:
-        - name: "Deleting temp files" 
-          file:
-            path: "{{ item.path }}"
-            state: absent
-          loop: "{{ temp_files.results }}"
-        - fail:
-            msg: "Failed creating certs"
+    - name: "Ensuring certificate for stunnel"
+      include_tasks: "tasks/stunnel-certs.yml"
 
     - name: "Create pod and service"
       vars:
