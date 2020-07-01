@@ -110,15 +110,21 @@
     failed_pvcs: []
     successful_pvcs: []
 
-- name: "Run rsync for pvc synchronously"
-  vars:
-    pvc_ns: "{{ item.pvc_namespace }}"
-    pvc_name: "{{ item.pvc_name }}"
-    volume_name: "{{ item.volume_name }}"
-    bound_pod_uid: "{{ item.bound_pod_uid }}"
-    node_name: "{{ item.node_name }}"
+# - name: "Run rsync for pvc synchronously"
+#   vars:
+#     pvc_ns: "{{ item.pvc_namespace }}"
+#     pvc_name: "{{ item.pvc_name }}"
+#     volume_name: "{{ item.volume_name }}"
+#     bound_pod_uid: "{{ item.bound_pod_uid }}"
+#     node_name: "{{ item.node_name }}"
+#   include_tasks: "tasks/rsync.yml"
+#   with_items: "{{ pvcs }}"
+
+- name: "Run parallel rsync jobs for PVCs in {{ pvc_namespace }}"
   include_tasks: "tasks/rsync.yml"
-  with_items: "{{ pvcs }}"
+  loop: "{{ pvcs | batch(rsync_batch_size) | list }}"
+  loop_control:
+    loop_var: "pvc_batch"
 
 - name: "Cleanup the transfer pod for rsync"
   k8s:
@@ -153,9 +159,13 @@
   delay: 3
   when: "{{ wait_for_finalizer }}"
 
-- name: "Printing failed / succeded pvcs"
+- name: "Printing successful / failed PVC rsync jobs"
   debug:
-    msg: "{{ failed_pvcs }} {{ successful_pvcs }}"
+    msg: "Successful PVCs: {{ successful_pvcs }} | Failed PVCs: {{ failed_pvcs }}"
+
+- name: "Print counts of successful / failed PVCs"
+  debug: 
+    msg: "# Successful PVCs: {{ successful_pvcs|length }} | # Failed PVCs: {{ failed_pvcs|length }}"
 
 - name: "Dumping failure report"
   copy:
