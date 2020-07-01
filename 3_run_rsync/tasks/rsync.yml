@@ -88,53 +88,43 @@
         daemon_reload: yes
       become: true
 
-  - name: "Ensure .ssh directory on source node"
-    file:
-      path: "~/.ssh"
-      state: directory
-    become: yes
+    - name: "Ensure .ssh directory on source node"
+      file:
+        path: "~/.ssh"
+        state: directory
+      become: yes
 
-  - name: "Copying private key to source node"
-    copy:
-      src: "{{ mig_dest_ssh_private_key|mandatory }}"
-      dest: "{{ mig_dest_ssh_key_remote_location }}"
-      mode: 0600
-    become: yes
+    - name: "Copying private key to source node"
+      copy:
+        src: "{{ mig_dest_ssh_private_key|mandatory }}"
+        dest: "{{ mig_dest_ssh_key_remote_location }}"
+        mode: 0600
+      become: yes
 
-  - name: "Wait for dns"
-    shell: "nslookup {{ mig_dest_service_url }}"
-    register: dig_output
-    until: dig_output.rc == 0
-    retries: 100
-    delay: 3
+    - name: "Wait for dns"
+      shell: "nslookup {{ mig_dest_service_url }}"
+      register: dig_output
+      until: dig_output.rc == 0
+      retries: 100
+      delay: 3
 
-  - name: "Ensure directory exists on the source"
-    stat:
-      path: "{{ mig_source_data_location }}"
-    register: source_dir_stat
+    - name: "Synchronizing files. This may take a while..."
+      shell: "rsync -aPvvH {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_ssh_user }}@localhost:{{ mig_dest_data_location }}"
 
-  - when: not source_dir_stat.stat.exists
-    fail:
-      msg: |
-        The directory {{ mig_source_data_location }} does not exist on the source cluster.
-        Skipping to the next PV...
+      register: sync_output
+      become: yes
 
-  - name: "Synchronizing files. This may take a while..."
-    shell: "rsync -aPvvH {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_ssh_user }}@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
-    register: sync_output
-    become: yes
+    - name: "Removing private key from source node"
+      file:
+        path: "{{ mig_dest_ssh_key_remote_location }}"
+        state: absent
+      become: yes
 
-  - name: "Removing private key from source node"
-    file:
-      path: "{{ mig_dest_ssh_key_remote_location }}"
-      state: absent
-    become: yes
-
-  - name: "Stop stunnel"
-    systemd:
-      name: "stunnel"
-      state: stopped
-    become: true
+    - name: "Stop stunnel"
+      systemd:
+        name: "stunnel"
+        state: stopped
+      become: true
 
 - name: "Collect failed pvcs"
   vars:
