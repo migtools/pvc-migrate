@@ -1,0 +1,18 @@
+syslog facility = local3
+read only = no
+list = yes
+auth users = {{ mig_dest_ssh_user }}
+secrets file = /etc/rsyncd.secrets
+hosts allow = 0.0.0.0/0
+uid = 0
+gid = 0
+
+
+{% for pvc in pvcs %}
+[{{ pvc.pvc_name }}]
+comment = achieve for {{ pvc.pvc_name }}
+path = /mnt/{{ pvc_namespace }}/{{ pvc.pvc_name }}
+uid =  root
+gid = root
+read only = false
+{% endfor %}

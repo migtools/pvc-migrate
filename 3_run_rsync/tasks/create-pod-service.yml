@@ -54,6 +54,20 @@
     src: "{{ stunnel_key_filepath }}"
   register: stunnel_key
 
+- name: "Generate rsyncd password"
+  vars:
+    rand_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
+  set_fact:
+    rsync_password: "{{ rand_password }}"
+
+- set_fact:
+    rsync_password: "{{ pvc_namespace }}"
+  when: debug_password
+
+- name: "Load rsyncd config"
+  set_fact:
+    rsyncd_config: "{{ lookup('template', 'rsyncd.conf.j2') }}"
+
 - debug:
     msg: "{{ lookup('template', 'pod.yml.j2') }}"
 
