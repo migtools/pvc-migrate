@@ -64,9 +64,10 @@
     rsync_password: "{{ pvc_namespace }}"
   when: debug_password
 
-- name: "Load rsyncd config"
-  set_fact:
-    rsyncd_config: "{{ lookup('template', 'rsyncd.conf.j2') }}"
+- name: "create rsyncd configmap"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'rsyncd.yml.j2') }}"
 
 - debug:
     msg: "{{ lookup('template', 'pod.yml.j2') }}"

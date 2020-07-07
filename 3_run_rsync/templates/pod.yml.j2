@@ -14,6 +14,9 @@ spec:
     persistentVolumeClaim:
       claimName: {{ pvc.pvc_name }}
 {% endfor %}
+  - name: rsyncd-conf
+    configMap:
+      name: {{ rsyncd_config }}
   containers:
   - name: rsyncd
     resources:
@@ -27,7 +30,7 @@ spec:
     command:
       - bash
       - -c
-      - "echo {{ mig_dest_ssh_user }}:$rsync_pass > /etc/rsyncd.secrets && echo $rsyncd-conf > /etc/rsyncd.conf && /usr/bin/rsync --daemon --no-detach --port {{ rsyncd_port }}"
+      - "echo {{ mig_dest_ssh_user }}:$(echo $rsyncd_pass | base64 -d) > /etc/rsyncd.secrets && chmod 0600 /etc/rsyncd.secrets && /usr/bin/rsync --daemon --no-detach --port {{ rsyncd_port }} -vvv"
     image: {{ transfer_pod_image }}
     ports:
     - containerPort: {{ rsyncd_port }}
@@ -38,6 +41,9 @@ spec:
     - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_vol_safe_name }}"
       name: {{ pvc.pvc_vol_safe_name }}
 {% endfor %}
+    - mountPath: "/etc/rsyncd.conf"
+      name: rsyncd-conf
+      subPath: rsyncd.conf
     securityContext:
       privileged: true
       readOnlyRootFilesystem: false
@@ -45,10 +51,8 @@ spec:
     env:
     - name: SSH_PUBLIC_KEY
       value: "{{ ssh_public_key['content'] | b64decode }}"
-    - name: rsyncd-pass
+    - name: rsyncd_pass
       value: "{{ rsync_password | b64encode }}"
-    - name: rsyncd-conf
-      value: "{{ rsyncd_config }}"
   - name: stunnel
     imagePullPolicy: Always
     image: {{ transfer_pod_image }}

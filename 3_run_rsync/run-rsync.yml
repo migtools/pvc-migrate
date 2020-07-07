@@ -34,6 +34,7 @@
         pod_name: "{{ pvc_namespace }}"
         svc_name: "{{ pvc_namespace }}"
         route_name: "{{ pvc_namespace }}"
+        rsyncd_config: "{{ pod_name }}"
         pvcs: "{{ item.pvcs }}"
       include_tasks: "tasks/create-pod-service.yml"
       with_items: "{{ pvc_data }}"
