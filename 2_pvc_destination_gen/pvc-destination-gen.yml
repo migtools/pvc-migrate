@@ -4,6 +4,8 @@
     - vars/defaults.yml
     - vars/storage-class-mappings.yml
   tasks:
+    - import_tasks: ../common/assert-kubeconfig.yml
+ 
     - name: Verify required variables are defined
       assert:
         that:
