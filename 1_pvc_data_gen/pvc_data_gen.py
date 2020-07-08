@@ -2,6 +2,7 @@ import json
 import yaml
 import urllib3
 import os
+import re
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from kubernetes import client, config
@@ -138,6 +139,7 @@ for namespace in data['namespaces_to_migrate']:
         # Build pvc-data.json data structure
         pvc_out = {
                 'pvc_name': pvc.metadata.name,
+                'pvc_vol_safe_name': re.sub(r'(\.+|\%+|\/+)', '-', pvc.metadata.name),
                 'pvc_namespace': pvc.metadata.namespace,
                 'capacity': pvc.spec.get("resources",{}).get("requests",{}).get("storage",""),
                 'labels': pvc_labels,
