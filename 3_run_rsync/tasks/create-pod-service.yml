@@ -64,12 +64,12 @@
     name: "{{ pod_name }}"
     namespace: "{{ pvc_namespace }}"
   register: pod
-  until: "true in (pod | json_query('resources[].status.containerStatuses[].ready'))"
+  until: "'Running' in (pod | json_query('resources[].status.phase'))"
   retries: "{{ transfer_pod_wait_retries }}"
   delay: 3
 
 - name: "Wait for svc to get a load balancer hostname"
-  k8s_facts:
+  k8s_info:
     api_version: v1
     kind: service
     name: "{{ svc_name }}"
