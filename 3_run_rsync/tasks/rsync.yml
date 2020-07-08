@@ -124,7 +124,6 @@
       environment:
         RSYNC_PASSWORD: "{{ rsync_password }}"
       shell: "rsync -aPvvH --port 2222 {{ mig_source_data_location }} rsync://{{ mig_dest_ssh_user }}@localhost/{{ pvc_name }}/"
-
       register: sync_output
       become: yes
 

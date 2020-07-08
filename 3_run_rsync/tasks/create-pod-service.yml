@@ -64,7 +64,7 @@
     rsync_password: "{{ pvc_namespace }}"
   when: debug_password
 
-- name: "create rsyncd configmap"
+- name: "Create rsyncd configmap"
   k8s:
     state: present
     definition: "{{ lookup('template', 'rsyncd.yml.j2') }}"
@@ -163,6 +163,11 @@
   retries: "{{ transfer_svc_delete_wait_retries }}"
   delay: 3
   when: "{{ wait_for_finalizer }}"
+
+- name: "Cleanup the configmap for rsyncd"
+  k8s:
+    state: absent
+    definition: "{{ lookup('template', 'rsyncd.yml.j2') }}"
 
 - name: "Printing failed / succeded pvcs"
   debug:
