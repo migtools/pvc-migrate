@@ -3,6 +3,8 @@ kind: Service
 metadata:
   labels:
     app: {{ pod_name }}
+    purpose: rsync
+    owner: pvc-migrate
   name: {{ svc_name }}
   namespace: {{ pvc_namespace }}
 spec:
@@ -13,4 +15,6 @@ spec:
     targetPort: 2222
   selector:
     app: {{ pod_name }}
+    purpose: rsync
+    owner: pvc-migrate
   type: LoadBalancer
