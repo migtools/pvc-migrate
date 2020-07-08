@@ -33,7 +33,7 @@
           when: n.stat.exists
 
         - fail:
-          when: n.stat.exists == False
+          when: not n.stat.exists
 
         - name: "Get list of user provided destination storage-classes"
           set_fact:

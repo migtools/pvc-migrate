@@ -19,7 +19,7 @@
 
       - fail:
           msg: "PVC data file from Stage 1 does not exist..."
-        when: p.stat.exists == False
+        when: not p.stat.exists
 
       - set_fact:
           pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
