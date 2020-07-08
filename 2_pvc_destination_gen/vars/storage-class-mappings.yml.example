@@ -1,4 +1,4 @@
 mig_storage_class_mappings:
   glusterfs-storage_RWO: ocs-storagecluster-ceph-rbd
   glusterfs-storage_RWX: ocs-storagecluster-cephfs
-  glusterfs-storage-block_RWO: ocs_storagecluster-ceph-rbd
+  glusterfs-storage-block_RWO: ocs-storagecluster-ceph-rbd

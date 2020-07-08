@@ -33,21 +33,40 @@
           when: n.stat.exists
 
         - fail:
-          when: n.stat.exists == False
+          when: not n.stat.exists
 
+        - name: "Get list of user provided destination storage-classes"
+          set_fact:
+            user_storage_classes: "{{ mig_storage_class_mappings.values() | list | unique }}"
+
+        - name: "Get list of available storage classes"
+          k8s_info:
+            api_version: storage.k8s.io/v1
+            kind: StorageClass
+          register: storage_classes
+
+        - name: "Create list of storage classes available"
+          vars:
+            available_storage_classes: []
+          set_fact:
+            available_storage_classes: "{{ available_storage_classes + [item.metadata.name] }}"
+          loop: "{{ storage_classes.resources }}"
+
+        - fail:
+          when: "{{ (user_storage_classes | difference(available_storage_classes)) | length > 0 }}"
 
         - set_fact:
             pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
             namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
 
 
-    - name: ensure the namespaces are created for the pvcs
+    - name: "Ensure the namespaces are created for the pvcs"
       k8s:
         state: present
         definition: "{{ lookup('template', 'namespace.yml.j2') }}"
       loop: "{{ namespace_data }}"
 
-    - name: create pvcs on destination namespace
+    - name: "Create pvcs on destination namespace"
       vars:
         pvcs: "{{ item.pvcs }}"
       include_tasks: "tasks/convert_and_create.yml"
