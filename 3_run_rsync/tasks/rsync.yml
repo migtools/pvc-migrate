@@ -41,7 +41,7 @@
           sslVersion = TLSv1.2
           client = yes
           syslog = no
-          [ssh]
+          [rsync]
           accept = 2222
           CAFile = /etc/stunnel/tls.crt
           cert = /etc/stunnel/tls.crt
@@ -109,8 +109,9 @@
       delay: 3
 
     - name: "Synchronizing files. This may take a while..."
-      shell: "rsync -aPvvH {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_ssh_user }}@localhost:{{ mig_dest_data_location }}"
-
+      environment:
+        RSYNC_PASSWORD: "{{ rsync_password }}"
+      shell: "rsync -aPvvH --port 2222 {{ mig_source_data_location }} rsync://{{ mig_dest_ssh_user }}@localhost/{{ pvc_name }}/"
       register: sync_output
       become: yes
 

@@ -20,17 +20,15 @@
   register: stunnel_cert
   when: cert_key_status.results[1].stat.exists
 
-- when: not stunnel_cert.valid_at.point_1 or
-        not cert_key_status.results[0].stat.exists or
-        not cert_key_status.results[1].stat.exists or
-        stunnel_key.public_key != stunnel_cert.public_key
+- when: not stunnel_cert.get('valid_at', {}).get('point_1', False) or
+    stunnel_key.get('public_key', '') != stunnel_cert.get('public_key', ' ')
   block:
   - debug:
       msg: 
-        - "Creating a new certificate as either :"
-        - "1. Either the cert or key does not exist"
+        - "Creating a new certificate as :"
+        - "1. The certificate or the key does not exist"
         - "2. Existing cert is about to expire"
-        - "3. Existing cert-key pair is invalid" 
+        - "3. Existing private key doesn't match the certificate" 
 
   - name: "Generating temp files for keys"
     tempfile:
@@ -78,5 +76,6 @@
         path: "{{ item.path }}"
         state: absent
       loop: "{{ temp_files.results }}"
+      when: temp_files is defined
     - fail:
         msg: "Failed ensuring certificate for stunnel..."
