@@ -123,7 +123,7 @@
     - name: "Synchronizing files. This may take a while..."
       environment:
         RSYNC_PASSWORD: "{{ rsync_password }}"
-      shell: "rsync -aPvvH --port 2222 {{ mig_source_data_location }} rsync://{{ mig_dest_ssh_user }}@localhost/{{ pvc_name }}/"
+      shell: "rsync -aPvvH --port 2222 {{ mig_source_data_location }} rsync://{{ mig_dest_ssh_user }}@localhost/{{ pvc_vol_safe_name }}/"
       register: sync_output
       become: yes
 
