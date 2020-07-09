@@ -95,6 +95,7 @@
     volume_name: "{{ item.volume_name }}"
     bound_pod_uid: "{{ item.bound_pod_uid }}"
     node_name: "{{ item.node_name }}"
+    pvc_vol_safe_name: "{{ item.pvc_vol_safe_name }}"
   include_tasks: "tasks/rsync.yml"
   with_items: "{{ pvcs }}"
 
