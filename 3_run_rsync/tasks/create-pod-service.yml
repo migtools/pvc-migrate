@@ -55,14 +55,8 @@
   register: stunnel_key
 
 - name: "Generate rsyncd password"
-  vars:
-    rand_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
   set_fact:
-    rsync_password: "{{ rand_password }}"
-
-- set_fact:
-    rsync_password: "{{ pvc_namespace }}"
-  when: debug_password
+    rsync_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
 
 - name: "Create rsyncd configmap"
   k8s:
