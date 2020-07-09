@@ -14,81 +14,165 @@
     mig_source_data_location_k8s_mount: "kubernetes.io~glusterfs"
 
 - set_fact:
-    mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+    mig_dest_service_url: "{{ rsync_route.resources[0].spec.host }}"
     mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_vol_safe_name }}"
     mig_source_data_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_data_location_k8s_mount }}/{{ volume_name }}/"
     mig_source_host: "{{ node_name }}"
     mig_dest_ssh_key_remote_location: "~/.ssh/dest_key"
 
+- set_fact:
+    source_validation_msg: |
+      The directory {{ mig_source_data_location }} does not exist on the source cluster. Possible reasons could be :
+      [1] PVC is not bound to any pod
+      [2] Backing storage is not readable
+      [3] State of the source system changed between Stage 1 and Stage 3 execution
+      Skipping to the next PV...
+
 - delegate_to: "{{ mig_source_host|mandatory }}"
-  ignore_errors: true
   tags:
   - sync_phase
   - final_phase
   block:
-  - name: "Ensure .ssh directory on source node"
-    file:
-      path: "~/.ssh"
-      state: directory
-    become: yes
+    - name: "Install stunnel"
+      yum:
+        name: stunnel
+        state: latest
+      become: true
 
-  - name: "Copying private key to source node"
-    copy:
-      src: "{{ mig_dest_ssh_private_key|mandatory }}"
-      dest: "{{ mig_dest_ssh_key_remote_location }}"
-      mode: 0600
-    become: yes
+    - name: "Write stunnel.conf"
+      copy:
+        content: |
+          foreground = no
+          pid =
+          sslVersion = TLSv1.2
+          client = yes
+          syslog = no
+          [rsync]
+          accept = 2222
+          CAFile = /etc/stunnel/tls.crt
+          cert = /etc/stunnel/tls.crt
+          connect = {{ mig_dest_service_url }}:443
+          verify = 2
+          key = /etc/stunnel/tls.key
+        dest: /etc/stunnel/stunnel.conf
+      become: true
 
-  - name: "Wait for dns"
-    shell: "nslookup {{ mig_dest_service_url }}"
-    register: dig_output
-    until: dig_output.rc == 0
-    retries: 100
-    delay: 3
+    - name: "Write tls.crt"
+      copy:
+        content: "{{ stunnel_crt['content']|b64decode }}"
+        dest: /etc/stunnel/tls.crt
+      become: true
 
-  - name: "Ensure directory exists on the source"
-    stat:
-      path: "{{ mig_source_data_location }}"
-    register: source_dir_stat
-    become: yes
+    - name: "Write tls.key"
+      copy:
+        content: "{{ stunnel_key['content']|b64decode }}"
+        dest: /etc/stunnel/tls.key
+        mode: 0600
+      become: true
 
-  - when: not source_dir_stat.get('stat', {}).get('exists', False)
-    fail:
-      msg: |
-        The directory {{ mig_source_data_location }} does not exist on the source cluster.
-        Skipping to the next PV...
+    - name: "Write stunnel systemd service unit file"
+      copy:
+        content: |
+          [Unit]
+          Description=TLS tunnel for network daemons
+          After=syslog.target network.target
 
-  - name: "Synchronizing files. This may take a while..."
-    shell: "rsync -aPvvH {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_ssh_user }}@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
-    register: sync_output
-    become: yes
+          [Service]
+          ExecStart=/usr/bin/stunnel
+          Type=forking
+          PrivateTmp=true
 
-  - name: "Removing private key from source node"
-    file:
-      path: "{{ mig_dest_ssh_key_remote_location }}"
-      state: absent
-    become: yes
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/stunnel.service
+      become: true
 
-- name: "Collect failed pvcs"
-  vars:
-    failed_pvc:
-      - name: "{{ pvc_name }}"
-        namespace: "{{ pvc_ns }}"
-        stdout: "{{ sync_output.stdout }}"
-        stderr: "{{ sync_output.stderr }}"
-        rc: "{{ sync_output.rc }}"
-  set_fact:
-    failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
-  when: sync_output is not defined or 
-    sync_output.rc != 0
+    - name: "Start stunnel"
+      systemd:
+        name: "stunnel"
+        state: restarted
+        daemon_reload: yes
+      become: true
 
-- name: "Collect successful pvcs"
-  vars:
-    successful_pvc:
-      - name: "{{ pvc_name }}"
-        namespace: "{{ pvc_ns }}"
-  set_fact:
-    successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
-  when:
-    - sync_output is defined 
-    - sync_output.rc == 0
+    - name: "Ensure .ssh directory on source node"
+      file:
+        path: "~/.ssh"
+        state: directory
+      become: yes
+
+    - name: "Copying private key to source node"
+      copy:
+        src: "{{ mig_dest_ssh_private_key|mandatory }}"
+        dest: "{{ mig_dest_ssh_key_remote_location }}"
+        mode: 0600
+      become: yes
+
+    - name: "Wait for dns"
+      shell: "nslookup {{ mig_dest_service_url }}"
+      register: dig_output
+      until: dig_output.rc == 0
+      retries: 100
+      delay: 3
+
+    - name: "Ensure directory exists on the source"
+      stat:
+        path: "{{ mig_source_data_location }}"
+      register: source_dir_stat
+      become: yes
+
+    - when: not source_dir_stat.get('stat', {}).get('exists', False)
+      block:
+      - set_fact:
+          sync_output:
+            stderr: "{{ source_validation_msg }}"
+      - fail:
+          msg: "{{ source_validation_msg }}"
+
+    - name: "Synchronizing files. This may take a while..."
+      environment:
+        RSYNC_PASSWORD: "{{ rsync_password }}"
+      shell: "rsync -aPvvH --port 2222 {{ mig_source_data_location }} rsync://{{ mig_dest_ssh_user }}@localhost/{{ pvc_vol_safe_name }}/"
+      register: sync_output
+      become: yes
+
+  rescue:
+    - vars:
+        sync_rc:
+          rc: 1
+      set_fact:
+        sync_output: "{{ sync_output | d({}) | combine(sync_rc, recursive=true) }}"
+  always:
+    - name: "Removing private key from source node"
+      file:
+        path: "{{ mig_dest_ssh_key_remote_location }}"
+        state: absent
+      become: yes
+
+    - name: "Stop stunnel"
+      systemd:
+        name: "stunnel"
+        state: stopped
+      become: true
+
+    - name: "Collect failed pvcs"
+      vars:
+        failed_pvc:
+          - name: "{{ pvc_name }}"
+            namespace: "{{ pvc_ns }}"
+            stdout: "{{ sync_output.get('stdout', '') }}"
+            stderr: "{{ sync_output.get('stderr', '') }}"
+            rc: "{{ sync_output.get('rc', 1) }}"
+      set_fact:
+        failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
+      when: sync_output.get('rc', 0) != 0
+
+    - name: "Collect successful pvcs"
+      vars:
+        successful_pvc:
+          - name: "{{ pvc_name }}"
+            namespace: "{{ pvc_ns }}"
+      set_fact:
+        successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
+      when:
+        - sync_output is defined
+        - sync_output.get('rc', 0) == 0

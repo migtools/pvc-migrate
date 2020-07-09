@@ -1,0 +1,81 @@
+- name: "Check if certificate and key exist"
+  stat:
+    path: "{{ item }}"
+  register: cert_key_status
+  loop:
+  - "{{ stunnel_key_filepath }}"
+  - "{{ stunnel_cert_filepath }}"
+ 
+- name: "Check if key is valid"
+  openssl_privatekey_info:
+    path: "{{ stunnel_key_filepath }}"
+  register: stunnel_key
+  when: cert_key_status.results[0].stat.exists
+
+- name: "Check if certificate is valid"
+  openssl_certificate_info:
+    path: "{{ stunnel_cert_filepath }}"
+    valid_at:
+      point_1: "+1d"
+  register: stunnel_cert
+  when: cert_key_status.results[1].stat.exists
+
+- when: not stunnel_cert.get('valid_at', {}).get('point_1', False) or
+    stunnel_key.get('public_key', '') != stunnel_cert.get('public_key', ' ')
+  block:
+  - debug:
+      msg: 
+        - "Creating a new certificate as :"
+        - "1. The certificate or the key does not exist"
+        - "2. Existing cert is about to expire"
+        - "3. Existing private key doesn't match the certificate" 
+
+  - name: "Generating temp files for keys"
+    tempfile:
+      state: file
+      suffix: "{{ item }}"
+    register: temp_files
+    loop:
+    - 'pem'
+    - 'csr'
+    - 'crt'
+
+  - name: "Generating new key"
+    openssl_privatekey:
+      size: 2048
+      path: "{{ temp_files.results[0].path }}"
+
+  - name: "Generating csr"
+    openssl_csr:
+      path: "{{ temp_files.results[1].path }}"
+      privatekey_path: "{{ temp_files.results[0].path }}"
+      country_name: US
+      state_or_province_name: NC
+      organization_name: Migration Engineering
+      common_name: openshift.io
+      locality_name: RDU
+
+  - name: "Generating certificate"
+    openssl_certificate:
+      path: "{{ temp_files.results[2].path }}"
+      privatekey_path: "{{ temp_files.results[0].path }}"
+      csr_path: "{{ temp_files.results[1].path }}"
+      provider: selfsigned
+
+  - copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dst }}"
+    loop:
+      - src: "{{ temp_files.results[0].path }}"
+        dst: "{{ stunnel_key_filepath }}"
+      - src: "{{ temp_files.results[2].path }}"
+        dst: "{{ stunnel_cert_filepath }}"
+  rescue:
+    - name: "Deleting temp files"
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ temp_files.results }}"
+      when: temp_files is defined
+    - fail:
+        msg: "Failed ensuring certificate for stunnel..."

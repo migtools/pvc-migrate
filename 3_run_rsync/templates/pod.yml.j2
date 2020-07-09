@@ -14,8 +14,11 @@ spec:
     persistentVolumeClaim:
       claimName: {{ pvc.pvc_name }}
 {% endfor %}
+  - name: rsyncd-conf
+    configMap:
+      name: {{ rsyncd_config }}
   containers:
-  - name: rsync
+  - name: rsyncd
     resources:
       limits:
         cpu: {{ transfer_pod_cpu_limits }}
@@ -24,19 +27,49 @@ spec:
         cpu: {{ transfer_pod_cpu_requests }}
         memory: {{ transfer_pod_mem_requests }}
     imagePullPolicy: Always
+    command:
+      - bash
+      - -c
+      - "echo {{ mig_dest_ssh_user }}:$(echo $rsyncd_pass | base64 -d) > /etc/rsyncd.secrets && chmod 0600 /etc/rsyncd.secrets && /usr/bin/rsync --daemon --no-detach --port {{ rsyncd_port }} -vvv"
     image: {{ transfer_pod_image }}
     ports:
-    - containerPort: 2222
-      name: ssh
+    - containerPort: {{ rsyncd_port }}
+      name: rsyncd
       protocol: TCP
     volumeMounts:
 {% for pvc in pvcs %}
     - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_vol_safe_name }}"
       name: {{ pvc.pvc_vol_safe_name }}
 {% endfor %}
+    - mountPath: "/etc/rsyncd.conf"
+      name: rsyncd-conf
+      subPath: rsyncd.conf
     securityContext:
       privileged: true
+      readOnlyRootFilesystem: false
       runAsUser: 0
     env:
     - name: SSH_PUBLIC_KEY
       value: "{{ ssh_public_key['content'] | b64decode }}"
+    - name: rsyncd_pass
+      value: "{{ rsync_password | b64encode }}"
+  - name: stunnel
+    imagePullPolicy: Always
+    image: {{ transfer_pod_image }}
+    ports:
+      - containerPort: 2222
+        name: stunnel
+        protocol: TCP
+    securityContext:
+      privileged: true
+      readOnlyRootFilesystem: false
+      runAsUser: 0
+    env:
+      - name: crt
+        value: "{{ stunnel_crt['content'] }}"
+      - name: key
+        value: "{{ stunnel_key['content'] }}"
+    command:
+      - bash
+      - -c
+      - "echo $crt|base64 -d > /etc/stunnel/tls.crt && echo $key|base64 -d > /etc/stunnel/tls.key && exec /bin/stunnel /etc/stunnel/stunnel.conf"

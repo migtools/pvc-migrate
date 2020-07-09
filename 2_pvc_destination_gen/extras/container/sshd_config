@@ -1,0 +1,11 @@
+      ChallengeResponseAuthentication no
+      GSSAPIAuthentication yes
+      GSSAPICleanupCredentials no
+      HostKey /etc/ssh/ssh_host_rsa_key
+      HostKey /etc/ssh/ssh_host_rsa_key
+      HostKey /etc/ssh/ssh_host_ecdsa_key
+      HostKey /etc/ssh/ssh_host_ed25519_key
+      PasswordAuthentication no
+      PermitRootLogin yes
+      StrictModes no
+      UsePAM yes
