@@ -50,8 +50,9 @@
     stat:
       path: "{{ mig_source_data_location }}"
     register: source_dir_stat
+    become: yes
 
-  - when: not source_dir_stat.stat.exists
+  - when: not source_dir_stat.get('stat', {}).get('exists', False)
     fail:
       msg: |
         The directory {{ mig_source_data_location }} does not exist on the source cluster.
