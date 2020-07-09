@@ -14,4 +14,3 @@ stunnel_cert_filepath: "./files/tls.crt"
 stunnel_key_filepath: "./files/tls.key"
 
 rsyncd_port:  22
-debug_password: true
