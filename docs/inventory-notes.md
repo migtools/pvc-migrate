@@ -28,6 +28,8 @@ Therefore, `pvc-migrate` needs to be able to connect with every node on the sour
 - Set SSH config (~/.ssh/config) on the host where `ansible-playbook` will be invoked
 - Set Ansible config (ansible.cfg) on the host where `ansible-playbook` will be invoked
 
+**Note** : For development clusters installed using `mig-agnosticd`, please follow the SSH instructions given [here](https://github.com/konveyor/mig-agnosticd/blob/master/3.x/SSH-GUIDE.md)
+
 ### **Mode 1**: Running 'ansible-playbook' on Bastion
 
 ```
