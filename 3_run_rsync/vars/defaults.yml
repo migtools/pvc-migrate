@@ -7,7 +7,7 @@ failed_pvcs_dir: ../output/
 successful_pvcs_dir: ../output/
 
 # Recommended Transfer Pod Image
-transfer_pod_image: "quay.io/konveyor/stunnel-ssh-transfer:latest"
+transfer_pod_image: "quay.io/konveyor/rsync-transfer:latest"
 mig_dest_ssh_user: root # note: image above has been designed to work with login as root
 
 stunnel_cert_filepath: "./files/tls.crt"
