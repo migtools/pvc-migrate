@@ -1,0 +1,126 @@
+# Required Input :
+#   pvc_name (string)      : name of the current pvc
+#   bound_pod_uid (string) : uid of the pod the current pvc is bound to
+#   volume_name (string)   : name of the volume in the pod which the current PVC is used for
+#   capacity (string)      : capacity of the current pvc in k8s units
+
+# TODO: pv mount location should be dynamically generated from a pre-defined set of mappings for different scs
+- set_fact:
+    mig_source_data_base_location: "/var/lib/origin/openshift.local.volumes"
+    mig_source_pv_mount: "kubernetes.io~glusterfs"
+    should_continue_estimation: false
+    sizing_adjustment_needed: false
+    # enum to represent sizing adjustment type
+    # Type 1 : When PV is almost full, we grow it by certain percentage
+    # Type 2 : When PV is grown out of k8s, we choose the actual volume size
+    volume_adjustment_type:
+      type_one: "Type-1"
+      type_two: "Type-2"
+
+- set_fact:
+    mig_source_pv_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_pv_mount }}/{{ volume_name }}/"
+
+- block:
+  - name: "Reading sizing information on current PVC"
+    set_fact:
+      matched_capacity: "{{ capacity | regex_findall(pvc_size_supported_conversion_units_pattern) | flatten }}"
+
+  - name: "Converting size info into compatible units"
+    set_fact:
+      pvc_capacity_int: "{{ matched_capacity[0] | int }}"
+      pvc_capacity_unit: "{{ matched_capacity[1] }}"
+    when:
+    - matched_capacity is defined
+    - matched_capacity[0] is defined
+    - matched_capacity[1] is defined
+    ignore_errors: true
+  
+  - name: "Determining whether automatic sizing adjustment can be done"
+    set_fact:
+      should_continue_estimation: true
+    when:
+    - pvc_capacity_int is defined
+    - pvc_capacity_unit is defined
+
+- when: not should_continue_estimation
+  debug:
+    msg: "The size for {{ pvc_name }} cannot be adjusted automatically as the SI unit for the PVC is not currently supported."
+
+- when: should_continue_estimation
+  tags:
+  - pv_size_estimation
+  become: yes
+  block:
+  - name: "Reading the disk usage on the source node"
+    shell: "df -BM {{ mig_source_pv_location }} | awk 'NR>1 { print $2,$4,$5 }'"
+    register: df_output
+
+  - when: df_output.stdout.split(' ') | length == 3
+    vars:
+      df_output_columns: "{{ df_output.stdout.split(' ') }}"
+    block:
+    - name: "Collecting actual size of the volume"
+      set_fact:
+        actual_vol_size: "{{ df_output_columns[0].replace('M', '') | int }}"
+      when: df_output_columns[0] is defined
+
+    - name: "Collecting usage info of the volume"
+      set_fact:
+        actual_used_vol_percentage: "{{ df_output_columns[2].replace('%', '') | int }}"
+      when: df_output_columns[2] is defined
+
+    - name: "Normalizing sizing data"
+      set_fact:
+        normalized_pvc_size: "{{ pvc_capacity_int|int * pvc_size_multiplier_mappings.get(pvc_capacity_unit)|int }}"
+      ignore_errors: true
+
+    - name: "Determining whether sizing adjustment is needed for {{ pvc_name }} [1]"
+      set_fact:
+        sizing_adjustment_needed: true
+        sizing_adjustment_type: "{{ volume_adjustment_type.type_one }}"
+      when: actual_used_vol_percentage|int > full_volume_threshold|int
+
+    - name: "Determining whether sizing adjustment is needed for {{ pvc_name }} [2]"
+      set_fact:
+        sizing_adjustment_needed: true
+        sizing_adjustment_type: "{{ volume_adjustment_type.type_two }}"
+      when:
+      - normalized_pvc_size is defined
+      - normalized_pvc_size|int < actual_vol_size|int
+
+- when:
+  - sizing_adjustment_needed
+  - sizing_adjustment_type == volume_adjustment_type.type_one
+  block:
+  - name: "Attempting to compute new adjusted volume size as the current volume is either full or close to full"
+    set_fact:
+      adjusted_volume_size: "{{ actual_vol_size|int * (1.00|float + full_volume_grow_percentage|float/100.00) }}"
+  
+  - debug:
+      msg: "{{ adjusted_volume_size }}"
+
+- when:
+  - sizing_adjustment_needed
+  - sizing_adjustment_type == volume_adjustment_type.type_two
+  block:
+  - name: "Attempting to compute new adjusted volume size as the size of the actual volume is bigger than that of requested in the PVC"
+    set_fact:
+      adjusted_volume_size: "{{ actual_vol_size|int }}"
+
+  - name: "Attempting to compute new adjusted volume size"
+    debug:
+      msg: |
+        Normalized PVC size : {{ normalized_pvc_size }}
+        Actual volume size : {{ actual_vol_size }}
+
+# TODO: complete following block
+- when:
+  - sizing_adjustment_needed
+  block:
+  - name: "Convert adjusted size into original units of the PVC"
+    debug:
+      msg: ""
+  
+  - name: "Update the pvc data with adjusted volume size"
+    debug:
+      msg: ""

@@ -25,7 +25,8 @@
       The directory {{ mig_source_data_location }} does not exist on the source cluster. Possible reasons could be :
       [1] PVC is not bound to any pod
       [2] Backing storage is not readable
-      [3] State of the source system changed between Stage 1 and Stage 3 execution
+      [3] PVC doesn't have a storage class
+      [4] State of the source system changed between Stage 1 and Stage 3 execution
       Skipping to the next PV...
 
 - delegate_to: "{{ mig_source_host|mandatory }}"

@@ -1,3 +1,21 @@
 # Stage 2 Input
 pvc_data_filepath: ../output/pvc-data.json
 namespace_data_filepath: ../output/namespace-data.json
+
+# volume size adjustment configuration 
+pvc_size_supported_conversion_units_pattern: "(\\d+)(G$|Gi$|M$|Mi$|T$|Ti$)"
+# note that for any new SI unit added to above pattern, a new conversion
+# mapping needs to be declared below. the base unit is M
+pvc_size_multiplier_mappings:
+  M: 1
+  Mi: 1
+  G: 1000
+  Gi: 1024
+  T: 1000000
+  Ti: 1048576
+# df output on the source node is in M
+pvc_size_df_output_unit_pattern: "(\\d+)(M$|%$)"
+# how much % usage qualifies as a full volume?
+full_volume_threshold: 98
+# how much % to grow resulting volume by?
+full_volume_grow_percentage: 5.0

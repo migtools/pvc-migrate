@@ -10,8 +10,6 @@
     mig_dest_pvc_data: "{{ mig_dest_pvc_data + [(item | combine(mig_converted_sc, recursive=true))] }}"
   loop: "{{ pvcs }}"
 
-- import_tasks: validate_pvs.yml
-
 - name: "Ensure the pvcs are created on destination"
   k8s:
     state: present

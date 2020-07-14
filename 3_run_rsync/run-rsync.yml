@@ -4,29 +4,16 @@
     - vars/run-rsync.yml
     - vars/defaults.yml
   tasks:
-    - import_tasks: "../common/assert-kubeconfig.yml"
+    - import_tasks: ../common/assert-kubeconfig.yml
+      tags:
+      - assert_kubeconfig
 
-    - name: "Verify required variables are defined"
-      assert:
-        that:
-          - pvc_data_filepath is defined
-
-    - block:
-      - name: "Ensure pvc data file exists"
-        stat:
-          path: "{{ pvc_data_filepath }}"
-        register: p
-
-      - fail:
-          msg: "PVC data file from Stage 1 does not exist..."
-        when: not p.stat.exists
-
-      - set_fact:
-          pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
-          namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
+    - import_tasks: ../common/assert-vars.yml
 
     - name: "Ensuring certificate for stunnel"
-      include_tasks: "tasks/stunnel-certs.yml"
+      import_tasks: tasks/stunnel-certs.yml
+      tags:
+      - stunnel_certs
 
     - name: "Create pod and service"
       vars:
@@ -36,5 +23,5 @@
         route_name: "{{ pvc_namespace }}"
         rsyncd_config: "{{ pod_name }}"
         pvcs: "{{ item.pvcs }}"
-      include_tasks: "tasks/create-pod-service.yml"
+      include_tasks: tasks/create-pod-service.yml
       with_items: "{{ pvc_data }}"

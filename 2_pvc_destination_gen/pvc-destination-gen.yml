@@ -6,43 +6,13 @@
   tasks:
     - import_tasks: ../common/assert-kubeconfig.yml
       tags:
-      - stage_two
       - assert_kubeconfig
  
-    - name: Verify required variables are defined
-      assert:
-        that:
-          - pvc_data_filepath is defined
+    - import_tasks: ../common/assert-vars.yml
 
-    # -------
     - tags:
-      - stage_two
-      - pre_flight
+      - assert_sc_mapping
       block:
-        - name: Ensure pvc data file exists
-          stat:
-            path: "{{ pvc_data_filepath }}"
-          register: p
-
-        - debug: msg="PVC json file exists..."
-          when: p.stat.exists
-
-        - fail:
-            msg: "PVC data generated from Stage 1 was not found. Exiting..."
-          when: p.stat.exists == False
-
-        - name: Ensure namespace data file exists
-          stat:
-            path: "{{ namespace_data_filepath }}"
-          register: n
-
-        - debug: msg="Namespace json file exists..."
-          when: n.stat.exists
-
-        - fail:
-            msg: "Namespace data generated from Stage 1 was not found. Exiting..."
-          when: not n.stat.exists
-
         - name: "Get list of user provided destination storage-classes"
           set_fact:
             user_storage_classes: "{{ mig_storage_class_mappings.values() | list | unique }}"
@@ -67,6 +37,17 @@
         - set_fact:
             pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
             namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
+    
+    - tags:
+      - adjust_pvs
+      block:
+      - set_fact:
+          unique_nodes: "{{ pvc_data | json_query('[*].pvcs[*].node_name') | unique | flatten }}"
+
+      - include_tasks: ./tasks/adjust_pvs.yml
+        loop: "{{ unique_nodes }}"
+        loop_control:
+          loop_var: node_name
 
     - name: "Ensure the namespaces are created for the pvcs"
       k8s:
@@ -74,14 +55,12 @@
         definition: "{{ lookup('template', 'namespace.yml.j2') }}"
       loop: "{{ namespace_data }}"
       tags:
-      - stage_two
       - ensure_ns
 
     - name: "Create pvcs on destination namespace"
       vars:
         pvcs: "{{ item.pvcs }}"
-      include_tasks: "tasks/ensure_pvcs.yml"
+      include_tasks: tasks/ensure_pvcs.yml
       loop: "{{ pvc_data }}"
       tags:
-      - stage_two
       - ensure_pvcs

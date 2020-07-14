@@ -1,0 +1,19 @@
+- delegate_to: "{{ node_name }}"
+  block:
+  - name: "Finding PVCs associated with {{ node_name }}"
+    set_fact:
+      found_pvcs: "{{ pvc_data | json_query(query) | flatten }}"
+    vars:
+      query: "[*].pvcs[?node_name=='{{ node_name }}']"
+
+  - include_tasks: ./compute_adjustment.yml
+    loop: "{{ found_pvcs }}"
+    vars:
+      pvc_name: "{{ current_pvc.pvc_name }}"
+      bound_pod_uid: "{{ current_pvc.bound_pod_uid }}"
+      volume_name: "{{ current_pvc.volume_name }}"
+      capacity: "{{ current_pvc.capacity }}"
+    loop_control:
+      loop_var: "current_pvc"
+    tags:
+    - probe_pv
