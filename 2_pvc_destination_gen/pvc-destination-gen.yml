@@ -5,6 +5,9 @@
     - vars/storage-class-mappings.yml
   tasks:
     - import_tasks: ../common/assert-kubeconfig.yml
+      tags:
+      - stage_two
+      - assert_kubeconfig
  
     - name: Verify required variables are defined
       assert:
@@ -12,7 +15,10 @@
           - pvc_data_filepath is defined
 
     # -------
-    - block:
+    - tags:
+      - stage_two
+      - pre_flight
+      block:
         - name: Ensure pvc data file exists
           stat:
             path: "{{ pvc_data_filepath }}"
@@ -22,6 +28,7 @@
           when: p.stat.exists
 
         - fail:
+            msg: "PVC data generated from Stage 1 was not found. Exiting..."
           when: p.stat.exists == False
 
         - name: Ensure namespace data file exists
@@ -33,6 +40,7 @@
           when: n.stat.exists
 
         - fail:
+            msg: "Namespace data generated from Stage 1 was not found. Exiting..."
           when: not n.stat.exists
 
         - name: "Get list of user provided destination storage-classes"
@@ -53,22 +61,27 @@
           loop: "{{ storage_classes.resources }}"
 
         - fail:
+            msg: "One or more storage class mappings are invalid. Exiting..."
           when: "{{ (user_storage_classes | difference(available_storage_classes)) | length > 0 }}"
 
         - set_fact:
             pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
             namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
 
-
     - name: "Ensure the namespaces are created for the pvcs"
       k8s:
         state: present
         definition: "{{ lookup('template', 'namespace.yml.j2') }}"
       loop: "{{ namespace_data }}"
+      tags:
+      - stage_two
+      - ensure_ns
 
     - name: "Create pvcs on destination namespace"
       vars:
         pvcs: "{{ item.pvcs }}"
-      include_tasks: "tasks/convert_and_create.yml"
+      include_tasks: "tasks/ensure_pvcs.yml"
       loop: "{{ pvc_data }}"
-
+      tags:
+      - stage_two
+      - ensure_pvcs

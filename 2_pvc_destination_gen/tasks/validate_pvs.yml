@@ -1,0 +1,7 @@
+- set_fact:
+    unique_nodes: "{{ mig_dest_pvc_data | json_query('[*].node_name') | unique }}"
+
+- include_tasks: gather_pvs.yml
+  loop: "{{ unique_nodes }}"
+  loop_control:
+    loop_var: node_name

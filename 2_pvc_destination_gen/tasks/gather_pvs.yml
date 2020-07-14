@@ -1,0 +1,12 @@
+- delegate_to: "{{ node_name }}"
+  block:
+  - debug:
+      msg: "In node {{ node_name }}"
+
+  - debug: 
+      msg: "Processing PVCs {{ mig_dest_pvc_data | json_query(query) }}"
+    vars:
+      query: "[?node_name=='{{ node_name }}']"
+
+- fail:
+    msg: "skipping"
