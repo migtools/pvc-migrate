@@ -3,7 +3,7 @@ pvc_data_filepath: ../output/pvc-data.json
 namespace_data_filepath: ../output/namespace-data.json
 
 # volume size adjustment configuration
-pv_adjusted_report_path: ../output
+pv_size_adjustment_report_path: ../output/pvc-data-adjusted.json
 pvc_size_supported_conversion_units_pattern: "(\\d+)(G$|Gi$|M$|Mi$|T$|Ti$)"
 # note that for any new SI unit added to above pattern, a new conversion
 # mapping needs to be declared below. the base unit is M

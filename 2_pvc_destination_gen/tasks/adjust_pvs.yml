@@ -16,5 +16,6 @@
       namespace: "{{ current_pvc.pvc_namespace }}"
     loop_control:
       loop_var: "current_pvc"
+    ignore_errors: true   # TODO: is this the right thing to do?
     tags:
     - probe_pv

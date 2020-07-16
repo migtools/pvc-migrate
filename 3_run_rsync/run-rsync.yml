@@ -10,6 +10,11 @@
 
     - import_tasks: ../common/assert-vars.yml
 
+    - tags:
+      - load_vars
+      set_fact:
+        pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
+
     - name: "Ensuring certificate for stunnel"
       import_tasks: tasks/stunnel-certs.yml
       tags:

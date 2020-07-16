@@ -34,17 +34,19 @@
             msg: "One or more storage class mappings are invalid. Exiting..."
           when: "{{ (user_storage_classes | difference(available_storage_classes)) | length > 0 }}"
 
-        - set_fact:
-            pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
-            namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
+    - tags:
+      - load_vars
+      set_fact:
+        pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
+        namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
     
     - tags:
       - adjust_pvs
       block:
       - set_fact:
-          unique_nodes: "{{ pvc_data | json_query('[*].pvcs[*].node_name') | unique | flatten }}"
+          unique_nodes: "{{ pvc_data | json_query('[*].pvcs[*].node_name') | flatten | unique }}"
           adjusted_volumes: []
-
+          
       - include_tasks: ./tasks/adjust_pvs.yml
         loop: "{{ unique_nodes }}"
         loop_control:
@@ -53,7 +55,7 @@
       - name: "Dumping adjusted volumes in the output directory"
         copy:
           content: "{{ adjusted_volumes | to_nice_json }}"
-          dest: "{{ pv_adjusted_report_path }}/pvc-data-adjusted.json"
+          dest: "{{ pv_size_adjustment_report_path }}"
 
     - name: "Ensure the namespaces are created for the pvcs"
       k8s:

@@ -101,7 +101,7 @@
   
   - name: "Converting adjusted size to original SI units used in the PVC"
     set_fact:
-      adjusted_volume_size: "{{ (adjusted_volume_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float) | round(0, 'ceil') }}"
+      adjusted_volume_size: "{{ (adjusted_volume_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float) | round(0, 'ceil') | int }}"
       adjusted_volume_unit: "{{ pvc_capacity_unit }}"
 
 - when:
@@ -110,7 +110,7 @@
   block:
   - name: "Attempting to compute new adjusted volume size as the size of the actual volume is bigger than that of requested in the PVC"
     set_fact:
-      adjusted_volume_size: "{{ (actual_vol_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float) | round(0, 'ceil') }}"
+      adjusted_volume_size: "{{ (actual_vol_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float) | round(0, 'ceil') | int }}"
       adjusted_volume_unit: "{{ pvc_capacity_unit }}"
 
 # TODO: complete following block
@@ -123,8 +123,9 @@
         pvc_namespace: "{{ namespace }}"
         pvc_name: "{{ pvc_name }}"
         adjusted_pvc_capacity: "{{ adjusted_volume_size|string + adjusted_volume_unit|string }}"
+        original_volume_usage: "{{ actual_used_vol_percentage|int|string }}%"
         original_pvc_capacity: "{{ pvc_capacity_int|string + pvc_capacity_unit|string }}"
-        original_pv_size: "{{ actual_vol_size }}"
+        actual_pv_size: "{{ actual_vol_size }}M"
         reason: "{{ sizing_adjustment_type.msg }}"
     set_fact:
       adjusted_volumes: "{{ adjusted_volumes + [updated_pvc_object] }}"
