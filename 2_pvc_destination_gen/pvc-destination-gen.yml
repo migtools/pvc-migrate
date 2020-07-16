@@ -43,11 +43,17 @@
       block:
       - set_fact:
           unique_nodes: "{{ pvc_data | json_query('[*].pvcs[*].node_name') | unique | flatten }}"
+          adjusted_volumes: []
 
       - include_tasks: ./tasks/adjust_pvs.yml
         loop: "{{ unique_nodes }}"
         loop_control:
           loop_var: node_name
+      
+      - name: "Dumping adjusted volumes in the output directory"
+        copy:
+          content: "{{ adjusted_volumes | to_nice_json }}"
+          dest: "{{ pv_adjusted_report_path }}/pvc-data-adjusted.json"
 
     - name: "Ensure the namespaces are created for the pvcs"
       k8s:
