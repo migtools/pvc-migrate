@@ -16,5 +16,5 @@ stunnel_key_filepath: "./files/tls.key"
 rsyncd_port:  22
 
 # Rsync default options
-rsync_opts: "-aPvvH --delete --port 2222"
+rsync_opts: "-aPvvH --delete"
 
