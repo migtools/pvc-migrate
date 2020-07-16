@@ -16,7 +16,7 @@
     # Type 2 : When PV is grown out of k8s, we choose the actual volume size
     volume_adjustment_type:
       type_one: 
-        msg: "PV was identified to be almost full. pvc-migrate grew the original size by {{ full_volume_grow_percentage|int }}%."
+        msg: "PV was identified to be full. pvc-migrate grew the original size by {{ full_volume_grow_percentage|int }}%."
       type_two: 
         msg: "A mismatch between the actual volume size and the requested PVC size was found. pvc-migrate used the highest of both the values."
 
@@ -111,11 +111,6 @@
   - name: "Attempting to compute new adjusted volume size as the size of the actual volume is bigger than that of requested in the PVC"
     set_fact:
       adjusted_volume_size: "{{ (actual_vol_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float) | round(0, 'ceil') | int }}"
-      adjusted_volume_unit: "{{ pvc_capacity_unit }}"
-
-  - name: "Converting adjusted size to original SI units used in the PVC"
-    set_fact:
-      adjusted_volume_size: "{{ (adjusted_volume_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float) | round(0, 'ceil') | int }}"
       adjusted_volume_unit: "{{ pvc_capacity_unit }}"
 
 # TODO: complete following block
