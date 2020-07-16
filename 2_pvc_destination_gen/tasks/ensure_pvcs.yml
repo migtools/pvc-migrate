@@ -2,6 +2,7 @@
   set_fact:
     mig_dest_pvc_data: []
     mig_dest_adjusted_pvc_data: []
+    adjustment_report: []
 
 - name: "Convert storage class"
   vars:
@@ -12,9 +13,15 @@
   loop: "{{ pvcs }}"
 
 - block:
+  - name: "Check if adjustment report file exists"
+    stat:
+      path: "{{ pv_size_adjustment_report_path }}"
+    register: adjustment_report_file
+
   - name: "Reading volume size adjustment report"
-    set_fact: 
+    set_fact:
       adjustment_report: "{{ lookup('file', pv_size_adjustment_report_path) | from_json }}"
+    when: adjustment_report_file.stat.exists
 
   - name: "Adjusting resulting sizes for applicable PVCs"
     vars:

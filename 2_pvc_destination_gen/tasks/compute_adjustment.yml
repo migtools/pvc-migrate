@@ -113,6 +113,11 @@
       adjusted_volume_size: "{{ (actual_vol_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float) | round(0, 'ceil') | int }}"
       adjusted_volume_unit: "{{ pvc_capacity_unit }}"
 
+  - name: "Converting adjusted size to original SI units used in the PVC"
+    set_fact:
+      adjusted_volume_size: "{{ (adjusted_volume_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float) | round(0, 'ceil') | int }}"
+      adjusted_volume_unit: "{{ pvc_capacity_unit }}"
+
 # TODO: complete following block
 - when:
   - sizing_adjustment_needed
