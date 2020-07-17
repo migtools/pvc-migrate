@@ -48,7 +48,7 @@ mig_storage_class_mappings:
 3. Run `Stage 2 (a)` while KUBECONFIG is set for connection to **destination cluster**
 ```
 export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
-ansible-playbook pvc-destination-gen.yml --skip-tags ensure_ns,ensure_pvcs
+ansible-playbook pvc-destination-gen.yml --tags stage_a
 ```
 Check the report generated in the output directory in file `pvc-data-adjusted.json`. Make sure that the new PV sizes are accepteable. 
 
@@ -73,7 +73,7 @@ In the above example, the volume on the source was full. Therefore, `pvc-migrate
 4. Run `Stage 2 (b)` while KUBECONFIG is set for connection to **destination cluster**
 ```
 export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
-ansible-playbook pvc-destination-gen.yml --skip-tags adjust_pvs
+ansible-playbook pvc-destination-gen.yml --tags stage_b
 ```
 
 5. Verify that PVCs are created on destination

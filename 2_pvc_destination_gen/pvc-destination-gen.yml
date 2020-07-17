@@ -7,11 +7,18 @@
     - import_tasks: ../common/assert-kubeconfig.yml
       tags:
       - assert_kubeconfig
+      - stage_a
+      - stage_b
  
     - import_tasks: ../common/assert-vars.yml
+      tags:
+      - stage_a
+      - stage_b
 
     - tags:
       - assert_sc_mapping
+      - stage_a
+      - stage_b
       block:
         - name: "Get list of user provided destination storage-classes"
           set_fact:
@@ -36,17 +43,20 @@
 
     - tags:
       - load_vars
+      - stage_a
+      - stage_b
       set_fact:
         pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
         namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
     
     - tags:
       - adjust_pvs
+      - stage_a
       block:
       - set_fact:
           unique_nodes: "{{ pvc_data | json_query('[*].pvcs[*].node_name') | flatten | unique }}"
           adjusted_volumes: []
-          
+
       - include_tasks: ./tasks/adjust_pvs.yml
         loop: "{{ unique_nodes }}"
         loop_control:
@@ -64,6 +74,7 @@
       loop: "{{ namespace_data }}"
       tags:
       - ensure_ns
+      - stage_b
 
     - name: "Create pvcs on destination namespace"
       vars:
@@ -72,3 +83,4 @@
       loop: "{{ pvc_data }}"
       tags:
       - ensure_pvcs
+      - stage_b
