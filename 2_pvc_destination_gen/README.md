@@ -10,10 +10,8 @@ This playbook takes the input from [Stage 1](../1_pvc_data_gen) and creates PVC 
 
 `Stage 2 (a)` scans the volumes on the source cluster to ensure :
 
-* The volumes on the source node are not full.
-  * The volume is considered full when the usage of the volume is above 98% (default value).
+* The volumes on the source node are not full or close-to-full.
 * The requested size in PVC matches the actual volume size on the source.
-  * This could be a result of growing a volume outside of Kubernetes, manually.
 
 If any of the above conditions are met, `pvc-migrate` takes corrective actions to _adjust_ the PVC size on the destination cluster. 
 
@@ -30,7 +28,7 @@ This is the final sub-stage where `pvc-migrate` will read the output from `Stage
 
 ## Usage:
 
-1. Create your own copy of vars file 
+1. Create your own copy of vars file
 ```
 cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 ```
