@@ -9,6 +9,9 @@ metadata:
     owner: pvc-migrate
 spec:
   volumes:
+  - name: pvc-migrate-stunnel-conf
+    configMap:
+      name: stunnel-conf
 {% for pvc in pvcs %}
   - name: {{ pvc.pvc_vol_safe_name }}
     persistentVolumeClaim:
@@ -56,8 +59,12 @@ spec:
   - name: stunnel
     imagePullPolicy: Always
     image: {{ transfer_pod_image }}
+    volumeMounts:
+    - mountPath: "/etc/stunnel/stunnel.conf"
+      name: pvc-migrate-stunnel-conf
+      subPath: stunnel.conf
     ports:
-      - containerPort: 2222
+      - containerPort: {{ stunnel_rsync_port }}
         name: stunnel
         protocol: TCP
     securityContext:
