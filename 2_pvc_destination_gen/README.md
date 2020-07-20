@@ -16,7 +16,7 @@ cp vars/storage-class-mappings.yml.example vars/storage-class-mappings.yml
 mig_storage_class_mappings:
   glusterfs-storage_RWO: ocs-storagecluster-ceph-rbd
   glusterfs-storage_RWX: ocs-storagecluster-cephfs
-  glusterfs-storage-block_RWO: ocs_storagecluster-ceph-rbd
+  glusterfs-storage-block_RWO: ocs-storagecluster-ceph-rbd
 ```
 
 3. Run playbook while KUBECONFIG is set for connection to **destination cluster**
