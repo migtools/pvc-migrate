@@ -18,6 +18,7 @@
 
 ```
 git clone https://github.com/konveyor/pvc-migrate && cd pvc-migrate
+git checkout <version>
 ```
 
 ### 2. Automation prerequisites

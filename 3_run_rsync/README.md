@@ -1,7 +1,6 @@
 # Stage 3: run_rsync
 
-This playbook takes the input from [Stage 1](../1_pvc_data_gen) and [Stage 2](../2_pvc_destination_gen) and creates a Pod mounting each PVC. It also creates 
-a LoadBalancer service through which we can run ssh/scp/rsync externally
+This playbook takes the input from [Stage 1](../1_pvc_data_gen) and [Stage 2](../2_pvc_destination_gen) and creates a Pod mounting each PVC. It exposes a service with a passthrough route. We use stunnel to run rsync externally from source worker node to destination rsync pod.
 
 ## Usage:
 
