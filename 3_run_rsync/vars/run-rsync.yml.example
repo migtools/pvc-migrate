@@ -8,5 +8,5 @@ transfer_pod_mem_requests: '1Gi'
 mig_dest_ssh_public_key: ""  # path to public key to install as authorized user in transfer pod
 mig_dest_ssh_private_key: "" # path to private key used for SSH auth into transfer pod as 'root' user
 
-# Wait for transfer pod service ELB deletion to complete before proceeding to next PVC
+# [DEPRECATED] Wait for transfer pod service ELB deletion to complete before proceeding to next PVC.
 wait_for_finalizer: false
