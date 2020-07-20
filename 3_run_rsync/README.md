@@ -36,4 +36,8 @@ export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
 ansible-playbook run-rsync.yml 
 ```
 
+By default, `rsync` accepts connections on port `2222` through `stunnel`. If the port is pre-occupied on your cluster, you can override it by using extra var `stunnel_rsync_port` : `ansible-playbook run-rsync.yml ... -e stunnel_rsync_port=<PORT> ...`.
+
+For all the default variables used, please check the [defaults.yml](./vars/defaults.yml) file.
+
 5. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate#7-run-cam-in-no-pvc-migration-mode) to complete the migration.
