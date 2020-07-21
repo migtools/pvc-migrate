@@ -36,7 +36,7 @@ export KUBECONFIG="/path/to/destination_cluster_kubeconfig"
 ansible-playbook run-rsync.yml 
 ```
 
-By default, `rsync` accepts connections on port `2222` through `stunnel`. If the port is pre-occupied on your cluster, you can override it by using extra var `stunnel_rsync_port` : `ansible-playbook run-rsync.yml ... -e stunnel_rsync_port=<PORT> ...`.
+By default, `rsync` accepts connections on port `2222` through `stunnel`. If the port is pre-occupied on your cluster, you can override it by using extra var `stunnel_port` : `ansible-playbook run-rsync.yml ... -e stunnel_port=<PORT> ...`.
 
 For all the default variables used, please check the [defaults.yml](./vars/defaults.yml) file.
 

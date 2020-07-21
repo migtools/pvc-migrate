@@ -64,7 +64,7 @@ spec:
       name: pvc-migrate-stunnel-conf
       subPath: stunnel.conf
     ports:
-      - containerPort: {{ stunnel_rsync_port }}
+      - containerPort: {{ stunnel_port }}
         name: stunnel
         protocol: TCP
     securityContext:

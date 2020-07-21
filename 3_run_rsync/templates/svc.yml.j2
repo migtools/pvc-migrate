@@ -10,9 +10,9 @@ metadata:
 spec:
   ports:
   - name: stunnel
-    port: {{ stunnel_rsync_port }}
+    port: {{ stunnel_port }}
     protocol: TCP
-    targetPort: {{ stunnel_rsync_port }}
+    targetPort: {{ stunnel_port }}
   selector:
     app: {{ pod_name }}
     purpose: rsync
@@ -33,6 +33,6 @@ spec:
     kind: Service
     name: {{ svc_name }}
   port:
-    targetPort: {{ stunnel_rsync_port }}
+    targetPort: {{ stunnel_port }}
   tls:
     termination: passthrough
