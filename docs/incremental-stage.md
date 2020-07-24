@@ -4,11 +4,12 @@
 
 ## Overview
 
-There are three basic steps during an incremental staged migration :
+There are a few basic steps during an incremental staged migration :
 
 1. An incremental stage assumes you have finished the **initial** data sync by completing [Stage 1](../1_pvc_data_gen), [Stage2](../2_pvc_destination_gen) and [Stage3](../3_run_rsync) for the desired namespace(s)
 2. Perform incremental stage 3 rsync as many times as necessary
-3. Perform final stage 3 rsync with applications quiesced
+3. Refresh stage1 and stage2 to catch up any changes on source environment (if necessary)
+4. Perform final stage 3 rsync with applications quiesced and dummy deployments with target PVCs attached
 
 ### Considerations
 
