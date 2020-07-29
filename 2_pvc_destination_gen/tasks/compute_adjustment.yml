@@ -92,9 +92,12 @@
   - sizing_adjustment_needed
   block:
   - name: "Attempting to compute new adjusted volume size as the size of the actual volume is bigger than that of requested in the PVC"
+    vars:
+      approximated_unit: "{{ pvc_size_approx_mappings.get(pvc_capacity_unit) }}"
+      normalized_pvc_size: "{{ pvc_capacity_int|int * pvc_size_multiplier_mappings.get(approximated_unit) }}"
     set_fact:
-      adjusted_volume_size: "{{ [(used_vol_size_grown|int / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float), (actual_vol_size|float / pvc_size_multiplier_mappings.get(pvc_capacity_unit)|float), pvc_capacity_int|int ] | max | round(0, 'ceil') | int }}"
-      adjusted_volume_unit: "{{ pvc_capacity_unit }}"
+      adjusted_volume_size: "{{ [(used_vol_size_grown|int / pvc_size_multiplier_mappings.get(approximated_unit)|float), (actual_vol_size|float / pvc_size_multiplier_mappings.get(approximated_unit)|float), normalized_pvc_size|int ] | max | round(0, 'ceil') | int }}"
+      adjusted_volume_unit: "{{ approximated_unit }}"
 
 - when:
   - sizing_adjustment_needed
