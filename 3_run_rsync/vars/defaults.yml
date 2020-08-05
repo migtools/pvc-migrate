@@ -18,4 +18,4 @@ rsyncd_port:  22
 stunnel_port: 2222
 
 # Rsync default options
-rsync_opts: "-aPvvH --delete"
+rsync_opts: "-aPvvHh --delete"

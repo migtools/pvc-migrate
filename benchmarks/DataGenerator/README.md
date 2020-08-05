@@ -47,3 +47,29 @@ ansible-playbook playbook.yml -e destroy=true
 ```
 
 Note that the environment variables exposed by the container are passed to the playbook as variables.
+
+## Alternative sample data generator
+
+An additional generate_sample.sh script is supplied within the image if more advanced data samples are needed, it can create new samples or randomize existing data. See options and sample usage below: 
+```
+$ ./generate_sample.sh -h
+
+Valid options are : 
+	-c : How much data to create in megabytes
+	-d : Target directory to create data, default is PWD
+	-m : Max number of files to create, default is 128
+	-r : Number of files of existing data to be randomized
+
+```
+
+Create some data : 
+
+```
+$ ./generate_sample.sh -c 4096 -d /opt/mounts/mnt1 -m 1024
+```
+
+Randomize existing data : 
+
+```
+$ ./generate_sample.sh -d /opt/mounts/mnt1 -r 128
+```

@@ -40,3 +40,7 @@ By default, `rsync` accepts connections on port `2222` through `stunnel`. If the
 For all the default variables used, please check the [defaults.yml](./vars/defaults.yml) file.
 
 5. Refer to  [Step 7 - Run CAM in "no PV" mode](https://github.com/konveyor/pvc-migrate#7-run-cam-in-no-pvc-migration-mode) to complete the migration.
+
+## Incremental staging
+
+Please see [incremental-stage](../docs/incremental-stage.md) for details.
