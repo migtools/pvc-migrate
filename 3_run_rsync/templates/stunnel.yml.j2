@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stunnel-conf
+  namespace: {{ pvc_namespace }}
+  labels:
+    app: {{ pod_name }}
+    purpose: stunnel-config
+    owner: pvc-migrate
+data:
+  stunnel.conf: |
+    foreground = yes
+    pid =
+    socket = l:TCP_NODELAY=1
+    socket = r:TCP_NODELAY=1
+    sslVersion = TLSv1.2
+
+    [rsync]
+    accept = {{ stunnel_port }}
+    connect = {{ rsyncd_port }}
+    key = /etc/stunnel/tls.key
+    cert = /etc/stunnel/tls.crt
+    TIMEOUTclose = 0
