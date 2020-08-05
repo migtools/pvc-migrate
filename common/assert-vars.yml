@@ -1,0 +1,32 @@
+- tags:
+  - assert_vars
+  block:
+   - name: "Verify required variables are defined"
+     assert:
+       that:
+         - pvc_data_filepath is defined 
+
+   - name: Ensure pvc data file exists
+     stat:
+       path: "{{ pvc_data_filepath }}"
+     register: p
+
+   - debug: msg="PVC json file exists..."
+     when: p.stat.exists
+
+   - fail:
+       msg: "PVC data generated from Stage 1 was not found. Exiting..."
+     when: p.stat.exists == False
+
+   - name: Ensure namespace data file exists
+     stat:
+       path: "{{ namespace_data_filepath }}"
+     register: n
+
+   - debug:
+       msg: "Namespace json file exists..."
+     when: n.stat.exists
+
+   - fail:
+       msg: "Namespace data generated from Stage 1 was not found. Exiting..."
+     when: not n.stat.exists

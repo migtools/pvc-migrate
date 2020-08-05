@@ -1,0 +1,46 @@
+- name: "Parsing pvc data"
+  set_fact:
+    mig_dest_pvc_data: []
+    mig_dest_adjusted_pvc_data: []
+    adjustment_report: []
+
+- name: "Convert storage class"
+  vars:
+    mig_converted_sc:
+      storage_class: "{{ mig_storage_class_mappings.get(item.storage_class+'_'+('RWX' if 'ReadWriteMany' in item.access_modes else ('ROX' if 'ReadOnlyMany' in item.access_modes else 'RWO')), item.storage_class)}}"
+  set_fact:
+    mig_dest_pvc_data: "{{ mig_dest_pvc_data + [(item | combine(mig_converted_sc, recursive=true))] }}"
+  loop: "{{ pvcs }}"
+
+- block:
+  - name: "Check if adjustment report file exists"
+    stat:
+      path: "{{ pv_size_adjustment_report_path }}"
+    register: adjustment_report_file
+
+  - name: "Reading volume size adjustment report"
+    set_fact:
+      adjustment_report: "{{ lookup('file', pv_size_adjustment_report_path) | from_json }}"
+    when: adjustment_report_file.stat.exists
+
+  - name: "Adjusting resulting sizes for applicable PVCs"
+    vars:
+      name_query: "[?pvc_name=='{{ original_pvc_data.pvc_name }}']"
+      ns_query: "[?pvc_namespace=='{{ original_pvc_data.pvc_namespace }}']"
+      use_original_capacity: "{{ adjustment_report | json_query(name_query) | json_query(ns_query) | length == 0 }}"
+      adjusted_capacity: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first).adjusted_pvc_capacity }}"
+      adjusted_pvc_size:
+        capacity: "{{ original_pvc_data.capacity if use_original_capacity else adjusted_capacity }}"
+    set_fact:
+      mig_dest_adjusted_pvc_data: "{{ mig_dest_adjusted_pvc_data + [(original_pvc_data|combine(adjusted_pvc_size, recursive=true))] }}"
+    loop: "{{ mig_dest_pvc_data }}"
+    loop_control:
+      loop_var: original_pvc_data
+
+- name: "Ensure the pvcs are created on destination"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'pvc.yml.j2') }}"
+  loop: "{{ mig_dest_adjusted_pvc_data }}"
+  tags:
+  - create_pvcs_on_destination

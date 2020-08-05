@@ -5,36 +5,21 @@
     - vars/storage-class-mappings.yml
   tasks:
     - import_tasks: ../common/assert-kubeconfig.yml
+      tags:
+      - assert_kubeconfig
+      - stage_a
+      - stage_b
  
-    - name: Verify required variables are defined
-      assert:
-        that:
-          - pvc_data_filepath is defined
+    - import_tasks: ../common/assert-vars.yml
+      tags:
+      - stage_a
+      - stage_b
 
-    # -------
-    - block:
-        - name: Ensure pvc data file exists
-          stat:
-            path: "{{ pvc_data_filepath }}"
-          register: p
-
-        - debug: msg="PVC json file exists..."
-          when: p.stat.exists
-
-        - fail:
-          when: p.stat.exists == False
-
-        - name: Ensure namespace data file exists
-          stat:
-            path: "{{ namespace_data_filepath }}"
-          register: n
-
-        - debug: msg="Namespace json file exists..."
-          when: n.stat.exists
-
-        - fail:
-          when: not n.stat.exists
-
+    - tags:
+      - assert_sc_mapping
+      - stage_a
+      - stage_b
+      block:
         - name: "Get list of user provided destination storage-classes"
           set_fact:
             user_storage_classes: "{{ mig_storage_class_mappings.values() | list | unique }}"
@@ -53,22 +38,49 @@
           loop: "{{ storage_classes.resources }}"
 
         - fail:
+            msg: "One or more storage class mappings are invalid. Exiting..."
           when: "{{ (user_storage_classes | difference(available_storage_classes)) | length > 0 }}"
 
-        - set_fact:
-            pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
-            namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
+    - tags:
+      - load_vars
+      - stage_a
+      - stage_b
+      set_fact:
+        pvc_data: "{{ lookup('file', pvc_data_filepath) | from_json }}"
+        namespace_data: "{{ lookup('file', namespace_data_filepath) | from_json }}"
+    
+    - tags:
+      - adjust_pvs
+      - stage_a
+      block:
+      - set_fact:
+          unique_nodes: "{{ pvc_data | json_query('[*].pvcs[*].node_name') | flatten | unique }}"
+          adjusted_volumes: []
 
+      - include_tasks: ./tasks/adjust_pvs.yml
+        loop: "{{ unique_nodes }}"
+        loop_control:
+          loop_var: node_name
+      
+      - name: "Dumping adjusted volumes in the output directory"
+        copy:
+          content: "{{ adjusted_volumes | to_nice_json }}"
+          dest: "{{ pv_size_adjustment_report_path }}"
 
     - name: "Ensure the namespaces are created for the pvcs"
       k8s:
         state: present
         definition: "{{ lookup('template', 'namespace.yml.j2') }}"
       loop: "{{ namespace_data }}"
+      tags:
+      - ensure_ns
+      - stage_b
 
     - name: "Create pvcs on destination namespace"
       vars:
         pvcs: "{{ item.pvcs }}"
-      include_tasks: "tasks/convert_and_create.yml"
+      include_tasks: tasks/ensure_pvcs.yml
       loop: "{{ pvc_data }}"
-
+      tags:
+      - ensure_pvcs
+      - stage_b
