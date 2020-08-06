@@ -6,7 +6,7 @@
     vars:
       query: "[*].pvcs[?node_name=='{{ node_name }}']"
 
-  - include_tasks: ./compute_adjustment.yml
+  - include_tasks: ./compute-adjustment.yml
     loop: "{{ found_pvcs }}"
     vars:
       pvc_name: "{{ current_pvc.pvc_name }}"
