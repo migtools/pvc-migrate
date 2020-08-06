@@ -11,7 +11,7 @@ spec:
   volumes:
   - name: pvc-migrate-stunnel-conf
     configMap:
-      name: stunnel-conf
+      name: {{ stunnel_config }}
 {% for pvc in pvcs %}
   - name: {{ pvc.pvc_vol_safe_name }}
     persistentVolumeClaim:
