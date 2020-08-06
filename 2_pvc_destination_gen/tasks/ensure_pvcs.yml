@@ -4,6 +4,10 @@
     mig_dest_adjusted_pvc_data: []
     adjustment_report: []
 
+- name: "Set fact for collection pvc errors"
+  set_fact:
+    pvc_errors: []
+
 - name: "Convert storage class"
   vars:
     mig_converted_sc:
@@ -17,11 +21,17 @@
     stat:
       path: "{{ pv_size_adjustment_report_path }}"
     register: adjustment_report_file
+    tags:
+      - sync_phase
+      - final_phase
 
   - name: "Reading volume size adjustment report"
     set_fact:
       adjustment_report: "{{ lookup('file', pv_size_adjustment_report_path) | from_json }}"
     when: adjustment_report_file.stat.exists
+    tags:
+      - sync_phase
+      - final_phase
 
   - name: "Adjusting resulting sizes for applicable PVCs"
     vars:
@@ -36,11 +46,21 @@
     loop: "{{ mig_dest_pvc_data }}"
     loop_control:
       loop_var: original_pvc_data
+    tags:
+      - sync_phase
+      - final_phase
 
 - name: "Ensure the pvcs are created on destination"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'pvc.yml.j2') }}"
+  include_tasks: tasks/ensure-pvc.yml
   loop: "{{ mig_dest_adjusted_pvc_data }}"
   tags:
   - create_pvcs_on_destination
+  - stage_b
+
+- name: "Dumping failed pvcs report"
+  copy:
+    content: "{{ pvc_errors | to_json }}"
+    dest: "{{ output_dir }}/failed-pvcs.json"
+  tags:
+    - create_pvcs_on_destination
+    - stage_b
