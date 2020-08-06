@@ -79,8 +79,12 @@
     - name: "Create pvcs on destination namespace"
       vars:
         pvcs: "{{ item.pvcs }}"
-      include_tasks: tasks/ensure_pvcs.yml
+      include_tasks: 
+        file: tasks/ensure_pvcs.yml
+        apply:
+          tags:
+          - ensure_pvcs
+          - stage_b
       loop: "{{ pvc_data }}"
       tags:
-      - ensure_pvcs
       - stage_b
