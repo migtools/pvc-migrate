@@ -57,7 +57,7 @@
           unique_nodes: "{{ pvc_data | json_query('[*].pvcs[*].node_name') | flatten | unique }}"
           adjusted_volumes: []
 
-      - include_tasks: ./tasks/adjust_pvs.yml
+      - include_tasks: ./tasks/adjust-pvs.yml
         loop: "{{ unique_nodes }}"
         loop_control:
           loop_var: node_name
@@ -79,8 +79,12 @@
     - name: "Create pvcs on destination namespace"
       vars:
         pvcs: "{{ item.pvcs }}"
-      include_tasks: tasks/ensure_pvcs.yml
+      include_tasks: 
+        file: tasks/ensure-pvcs.yml
+        apply:
+          tags:
+          - ensure_pvcs
+          - stage_b
       loop: "{{ pvc_data }}"
       tags:
-      - ensure_pvcs
       - stage_b

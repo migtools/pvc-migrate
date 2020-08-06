@@ -1,6 +1,7 @@
 # Stage 2 Input
 pvc_data_filepath: ../output/pvc-data.json
 namespace_data_filepath: ../output/namespace-data.json
+output_dir: ../output
 
 pv_size_adjustment_report_path: ../output/pvc-data-adjusted.json
 pvc_size_conversion_base_unit: 'M'

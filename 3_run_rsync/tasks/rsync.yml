@@ -164,7 +164,7 @@
             stderr: "{{ sync_output.get('stderr', '') }}"
             rc: "{{ sync_output.get('rc', 1) }}"
       set_fact:
-        failed_pvcs: "{{ failed_pvcs +  failed_pvc }}"
+        failed_pvcs: "{{ failed_pvcs + failed_pvc }}"
       when: sync_output.get('rc', 0) != 0
 
     - name: "Collect successful pvcs"
@@ -173,7 +173,7 @@
           - name: "{{ pvc_name }}"
             namespace: "{{ pvc_ns }}"
       set_fact:
-        successful_pvcs: "{{ successful_pvcs +  successful_pvc }}"
+        successful_pvcs: "{{ successful_pvcs + successful_pvc }}"
       when:
         - sync_output is defined
         - sync_output.get('rc', 0) == 0

@@ -1,0 +1,18 @@
+- name: "Ensure pvc is created on destination"
+  ignore_errors: yes
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'pvc.yml.j2') }}"
+  register: patch_output
+
+- name: "Collect errors in patching pvc"
+  vars:
+    pvc_error:
+      - code: "{{ patch_output.status }}"
+        reason: "{{ patch_output.reason }}"
+        msg: "{{ patch_output.msg }}"
+        pvc_name: "{{ item.pvc_name }}"
+        pvc_namespace: "{{ item.pvc_namespace }}"
+  set_fact:
+    pvc_errors: "{{ pvc_errors + pvc_error }}"
+  when: patch_output.status is defined and patch_output.reason is defined

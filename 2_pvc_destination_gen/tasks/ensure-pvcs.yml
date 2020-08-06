@@ -4,6 +4,10 @@
     mig_dest_adjusted_pvc_data: []
     adjustment_report: []
 
+- name: "Set fact for collection pvc errors"
+  set_fact:
+    pvc_errors: []
+
 - name: "Convert storage class"
   vars:
     mig_converted_sc:
@@ -28,7 +32,7 @@
       name_query: "[?pvc_name=='{{ original_pvc_data.pvc_name }}']"
       ns_query: "[?pvc_namespace=='{{ original_pvc_data.pvc_namespace }}']"
       use_original_capacity: "{{ adjustment_report | json_query(name_query) | json_query(ns_query) | length == 0 }}"
-      adjusted_capacity: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first).adjusted_pvc_capacity }}"
+      adjusted_capacity: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first).adjusted_pvc_capacity if not use_original_capacity else original_pvc_data.capacity }}"
       adjusted_pvc_size:
         capacity: "{{ original_pvc_data.capacity if use_original_capacity else adjusted_capacity }}"
     set_fact:
@@ -38,9 +42,14 @@
       loop_var: original_pvc_data
 
 - name: "Ensure the pvcs are created on destination"
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'pvc.yml.j2') }}"
+  include_tasks: tasks/ensure-pvc.yml
   loop: "{{ mig_dest_adjusted_pvc_data }}"
   tags:
   - create_pvcs_on_destination
+
+- name: "Dumping failed pvcs report"
+  copy:
+    content: "{{ pvc_errors | to_json }}"
+    dest: "{{ output_dir }}/failed-pvcs.json"
+  tags:
+    - create_pvcs_on_destination
