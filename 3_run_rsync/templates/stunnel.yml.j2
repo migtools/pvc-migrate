@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: stunnel-conf
+  name: {{ stunnel_config }}
   namespace: {{ pvc_namespace }}
   labels:
     app: {{ pod_name }}
