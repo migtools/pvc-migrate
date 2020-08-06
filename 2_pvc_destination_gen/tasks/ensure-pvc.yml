@@ -8,9 +8,11 @@
 - name: "Collect errors in patching pvc"
   vars:
     pvc_error:
-      - code: patch_output.status
-        reason: patch_output.reason
-        msg: patch_output.msg
+      - code: "{{ patch_output.status }}"
+        reason: "{{ patch_output.reason }}"
+        msg: "{{ patch_output.msg }}"
+        pvc_name: "{{ item.pvc_name }}"
+        pvc_namespace: "{{ item.pvc_namespace }}"
   set_fact:
-    pvc_errors: "{{ pvc_errors | pvc_error }}"
-  when: patch_output.status != 200 and patch_output.status != 201
+    pvc_errors: "{{ pvc_errors + pvc_error }}"
+  when: patch_output.status is defined and patch_output.reason is defined
