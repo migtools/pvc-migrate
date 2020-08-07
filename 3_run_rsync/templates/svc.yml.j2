@@ -29,6 +29,9 @@ metadata:
     purpose: rsync
     owner: pvc-migrate
 spec:
+{% if route_host != "" %}
+  host: {{ route_host }}
+{% endif %}
   to:
     kind: Service
     name: {{ svc_name }}

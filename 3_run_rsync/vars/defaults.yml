@@ -19,3 +19,5 @@ stunnel_port: 2222
 
 # Rsync default options
 rsync_opts: "-aPvvHh --delete"
+
+route_host: ""

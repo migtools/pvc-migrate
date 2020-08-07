@@ -71,6 +71,20 @@
 - debug:
     msg: "{{ lookup('template', 'pod.yml.j2') }}"
 
+- name: "Look up the cluster domain for route"
+  k8s_info:
+    api_version: operator.openshift.io/v1
+    kind: IngressController
+    name: "default"
+    namespace: "openshift-ingress-operator"
+  register: ingress_controller
+
+- set_fact:
+    route_host: "{{ route_name }}.{{ ingress_controller.resources[0].status.domain }}"
+  when:
+  - ingress_controller.resources | length > 0
+  - ingress_controller.resources[0].get('status', {}).get('domain', '') != ''
+
 - name: "Create a pod for rsync"
   k8s:
     state: present
@@ -104,16 +118,20 @@
   retries: "{{ transfer_svc_wait_retries }}"
   delay: 3
 
-- name: "Wait for route to get hostname"
+- name: "Wait for route to get admitted"
   k8s_facts:
     api_version: route.openshift.io/v1
     kind: route
     name: "{{ route_name }}"
     namespace: "{{ pvc_namespace }}"
   register: rsync_route
-  until: " rsync_route.resources is defined
-          and rsync_route.resources[0].spec is defined
-          and rsync_route.resources[0].spec.host is defined"
+  until:
+    - rsync_route.resources | length > 0
+    - rsync_route.resources[0].get('spec', {}).get('host', '') != ''
+    - rsync_route.resources[0].get('status', {}).get('ingress', []) | length == 1
+    - rsync_route.resources[0].get('status', {}).get('ingress', [])[0].get('conditions', []) | length > 0
+    - rsync_route.resources[0].status.ingress[0].conditions | json_query('[? type==`Admitted`]') | length > 0
+    - rsync_route.resources[0].status.ingress[0].conditions | json_query('[? type==`Admitted`].status')
 
 - set_fact:
     failed_pvcs: []
