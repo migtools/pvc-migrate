@@ -2,19 +2,19 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: {{ pod_name }}
+    app: "{{ pod_name }}"
     purpose: rsync
     owner: pvc-migrate
-  name: {{ svc_name }}
-  namespace: {{ pvc_namespace }}
+  name: "{{ svc_name }}"
+  namespace: "{{ pvc_namespace }}"
 spec:
   ports:
   - name: stunnel
-    port: {{ stunnel_port }}
+    port: "{{ stunnel_port }}"
     protocol: TCP
-    targetPort: {{ stunnel_port }}
+    targetPort: "{{ stunnel_port }}"
   selector:
-    app: {{ pod_name }}
+    app: "{{ pod_name }}"
     purpose: rsync
     owner: pvc-migrate
   type: ClusterIP
@@ -22,20 +22,20 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ route_name }}
-  namespace: {{ pvc_namespace }}
+  name: "{{ route_name }}"
+  namespace: "{{ pvc_namespace }}"
   labels:
-    app: {{ pod_name }}
+    app: "{{ pod_name }}"
     purpose: rsync
     owner: pvc-migrate
 spec:
 {% if route_host != "" %}
-  host: {{ route_host }}
+  host: "{{ route_host }}"
 {% endif %}
   to:
     kind: Service
-    name: {{ svc_name }}
+    name: "{{ svc_name }}"
   port:
-    targetPort: {{ stunnel_port }}
+    targetPort: "{{ stunnel_port }}"
   tls:
     termination: passthrough
