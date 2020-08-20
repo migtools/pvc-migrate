@@ -23,7 +23,7 @@ data:
 {% for pvc in pvcs %}
     ["{{ pvc.pvc_vol_safe_name }}"]
         comment = archive for "{{ pvc.pvc_vol_safe_name }}"
-        path = /mnt/"{ pvc_namespace }}"/"{ pvc.pvc_vol_safe_name }}"
+        path = "/mnt/{ pvc_namespace }}/{ pvc.pvc_vol_safe_name }}"
         uid =  root
         gid = root
         list = yes
