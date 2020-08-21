@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ rsyncd_config }}
-  namespace: {{ pvc_namespace }}
+  name: "{{ rsyncd_config }}"
+  namespace: "{{ pvc_namespace }}"
   labels:
-    app: {{ pod_name }}
+    app: "{{ pod_name }}"
     purpose: rsync
     owner: pvc-migrate
 data:
@@ -13,7 +13,7 @@ data:
     read only = no
     list = yes
     max = 3
-    auth users = {{ mig_dest_ssh_user }}
+    auth users = "{{ mig_dest_ssh_user }}"
     secrets file = /etc/rsyncd.secrets
     hosts allow = ::1
     uid = root
@@ -21,14 +21,14 @@ data:
 
 
 {% for pvc in pvcs %}
-    [{{ pvc.pvc_vol_safe_name }}]
-        comment = archive for {{ pvc.pvc_vol_safe_name }}
-        path = /mnt/{{ pvc_namespace }}/{{ pvc.pvc_vol_safe_name }}
+    ["{{ pvc.pvc_vol_safe_name }}"]
+        comment = archive for "{{ pvc.pvc_vol_safe_name }}"
+        path = "/mnt/{ pvc_namespace }}/{ pvc.pvc_vol_safe_name }}"
         uid =  root
         gid = root
         list = yes
         hosts allow = ::1
-        auth users = {{ mig_dest_ssh_user }}
+        auth users = "{{ mig_dest_ssh_user }}"
         secrets file = /etc/rsyncd.secrets
         read only = false
 {% endfor %}

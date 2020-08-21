@@ -1,48 +1,48 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: {{ pod_name }}
-  namespace: {{ pvc_namespace }}
+  name: "{{ pod_name }}"
+  namespace: "{{ pvc_namespace }}"
   labels:
-    app: {{ pod_name }}
+    app: "{{ pod_name }}"
     purpose: rsync
     owner: pvc-migrate
 spec:
   volumes:
   - name: pvc-migrate-stunnel-conf
     configMap:
-      name: {{ stunnel_config }}
+      name: "{{ stunnel_config }}"
 {% for pvc in pvcs %}
-  - name: {{ pvc.pvc_vol_safe_name }}
+  - name: "{{ pvc.pvc_vol_safe_name }}"
     persistentVolumeClaim:
-      claimName: {{ pvc.pvc_name }}
+      claimName: "{{ pvc.pvc_name }}"
 {% endfor %}
   - name: rsyncd-conf
     configMap:
-      name: {{ rsyncd_config }}
+      name: "{{ rsyncd_config }}"
   containers:
   - name: rsyncd
     resources:
       limits:
-        cpu: {{ transfer_pod_cpu_limits }}
-        memory: {{ transfer_pod_mem_limits }}
+        cpu: "{{ transfer_pod_cpu_limits }}"
+        memory: "{{ transfer_pod_mem_limits }}"
       requests:
-        cpu: {{ transfer_pod_cpu_requests }}
-        memory: {{ transfer_pod_mem_requests }}
+        cpu: "{{ transfer_pod_cpu_requests }}"
+        memory: "{{ transfer_pod_mem_requests }}"
     imagePullPolicy: Always
     command:
       - bash
       - -c
       - "echo {{ mig_dest_ssh_user }}:$(echo $rsyncd_pass | base64 -d) > /etc/rsyncd.secrets && chmod 0600 /etc/rsyncd.secrets && /usr/bin/rsync --daemon --no-detach --port {{ rsyncd_port }} -vvv"
-    image: {{ transfer_pod_image }}
+    image: "{{ transfer_pod_image }}"
     ports:
-    - containerPort: {{ rsyncd_port }}
+    - containerPort: "{{ rsyncd_port }}"
       name: rsyncd
       protocol: TCP
     volumeMounts:
 {% for pvc in pvcs %}
-    - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_vol_safe_name }}"
-      name: {{ pvc.pvc_vol_safe_name }}
+    - mountPath: "/mnt/{ pvc_namespace }}/{ pvc.pvc_vol_safe_name }}"
+      name: "{{ pvc.pvc_vol_safe_name }}"
 {% endfor %}
     - mountPath: "/etc/rsyncd.conf"
       name: rsyncd-conf
@@ -58,13 +58,13 @@ spec:
       value: "{{ rsync_password | b64encode }}"
   - name: stunnel
     imagePullPolicy: Always
-    image: {{ transfer_pod_image }}
+    image: "{{ transfer_pod_image }}"
     volumeMounts:
     - mountPath: "/etc/stunnel/stunnel.conf"
       name: pvc-migrate-stunnel-conf
       subPath: stunnel.conf
     ports:
-      - containerPort: {{ stunnel_port }}
+      - containerPort: "{{ stunnel_port }}"
         name: stunnel
         protocol: TCP
     securityContext:

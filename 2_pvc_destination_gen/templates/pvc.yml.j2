@@ -3,12 +3,12 @@ kind: PersistentVolumeClaim
 metadata:
   finalizers:
   - kubernetes.io/pvc-protection
-  name: {{ item.pvc_name }}
-  namespace: {{ item.pvc_namespace }}
+  name: "{{ item.pvc_name }}"
+  namespace: "{{ item.pvc_namespace }}"
 spec:
-  accessModes: {{ item.access_modes }}
+  accessModes: "{{ item.access_modes }}"
   resources:
     requests:
-      storage: {{ item.capacity }}
-  storageClassName: {{ item.storage_class }}
+      storage: "{{ item.capacity }}"
+  storageClassName: "{{ item.storage_class }}"
   volumeMode: Filesystem
