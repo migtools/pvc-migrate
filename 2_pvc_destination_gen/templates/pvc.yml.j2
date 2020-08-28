@@ -6,7 +6,7 @@ metadata:
   name: "{{ item.pvc_name }}"
   namespace: "{{ item.pvc_namespace }}"
 spec:
-  accessModes: "{{ item.access_modes }}"
+  accessModes: {{ item.access_modes | to_yaml }}
   resources:
     requests:
       storage: "{{ item.capacity }}"

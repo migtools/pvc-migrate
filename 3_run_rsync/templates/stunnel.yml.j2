@@ -16,8 +16,8 @@ data:
     sslVersion = TLSv1.2
 
     [rsync]
-    accept = "{{ stunnel_port }}"
-    connect = "{{ rsyncd_port }}"
+    accept = {{ stunnel_port }}
+    connect = {{ rsyncd_port }}
     key = /etc/stunnel/tls.key
     cert = /etc/stunnel/tls.crt
     TIMEOUTclose = 0

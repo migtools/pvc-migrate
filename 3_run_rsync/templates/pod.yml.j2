@@ -36,12 +36,12 @@ spec:
       - "echo {{ mig_dest_ssh_user }}:$(echo $rsyncd_pass | base64 -d) > /etc/rsyncd.secrets && chmod 0600 /etc/rsyncd.secrets && /usr/bin/rsync --daemon --no-detach --port {{ rsyncd_port }} -vvv"
     image: "{{ transfer_pod_image }}"
     ports:
-    - containerPort: "{{ rsyncd_port }}"
+    - containerPort: {{ rsyncd_port|int }}
       name: rsyncd
       protocol: TCP
     volumeMounts:
 {% for pvc in pvcs %}
-    - mountPath: "/mnt/{ pvc_namespace }}/{ pvc.pvc_vol_safe_name }}"
+    - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_vol_safe_name }}"
       name: "{{ pvc.pvc_vol_safe_name }}"
 {% endfor %}
     - mountPath: "/etc/rsyncd.conf"
@@ -64,7 +64,7 @@ spec:
       name: pvc-migrate-stunnel-conf
       subPath: stunnel.conf
     ports:
-      - containerPort: "{{ stunnel_port }}"
+      - containerPort: {{ stunnel_port|int }}
         name: stunnel
         protocol: TCP
     securityContext:

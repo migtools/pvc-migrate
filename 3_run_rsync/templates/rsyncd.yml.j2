@@ -13,7 +13,7 @@ data:
     read only = no
     list = yes
     max = 3
-    auth users = "{{ mig_dest_ssh_user }}"
+    auth users = {{ mig_dest_ssh_user|string }}
     secrets file = /etc/rsyncd.secrets
     hosts allow = ::1
     uid = root
@@ -21,14 +21,14 @@ data:
 
 
 {% for pvc in pvcs %}
-    ["{{ pvc.pvc_vol_safe_name }}"]
-        comment = archive for "{{ pvc.pvc_vol_safe_name }}"
-        path = "/mnt/{ pvc_namespace }}/{ pvc.pvc_vol_safe_name }}"
+    [{{ pvc.pvc_vol_safe_name|string }}]
+        comment = archive for {{ pvc.pvc_vol_safe_name|string }}
+        path = /mnt/{{ pvc_namespace|string }}/{{ pvc.pvc_vol_safe_name|string }}
         uid =  root
         gid = root
         list = yes
         hosts allow = ::1
-        auth users = "{{ mig_dest_ssh_user }}"
+        auth users = {{ mig_dest_ssh_user|string }}
         secrets file = /etc/rsyncd.secrets
         read only = false
 {% endfor %}
