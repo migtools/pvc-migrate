@@ -128,10 +128,9 @@
   until:
     - rsync_route.resources | length > 0
     - rsync_route.resources[0].get('spec', {}).get('host', '') != ''
-    - rsync_route.resources[0].get('status', {}).get('ingress', []) | length == 1
-    - rsync_route.resources[0].get('status', {}).get('ingress', [])[0].get('conditions', []) | length > 0
-    - rsync_route.resources[0].status.ingress[0].conditions | json_query('[? type==`Admitted`]') | length > 0
-    - rsync_route.resources[0].status.ingress[0].conditions | json_query('[? type==`Admitted`].status')
+    - rsync_route.resources[0].get('status', {}).get('ingress', []) | length > 0
+    - (rsync_route.resources[0] | json_query("status.ingress[? routerName == 'default' ]") | length) > 0
+    - (rsync_route.resources[0]| json_query('status.ingress[? routerName == `default` ].conditions') | flatten | json_query('[? type == `Admitted` && status == `True` ]') | flatten | length) > 0
 
 - set_fact:
     failed_pvcs: []
