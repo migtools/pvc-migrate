@@ -1,11 +1,22 @@
 ---
 - hosts: localhost
   connection: local
+  vars_files:
+    - "./test-config.yml"
   tasks:
+  - tags:
+    - test_prepare
+    - test
+    - test_validation
+    block:
+    - include_vars: 
+        file: "../benchmarks/DataGenerator/default.yml"
+        name: expected_vars
+
   - tags:
     - validation
     block:
-    - name: "Ensure kubeconfig files are present"
+    - name: "Ensure kubeconfig file is present"
       stat:
         path: "src.config"
       register: kubeconfig
@@ -13,9 +24,10 @@
     - when:
       - not kubeconfig.stat.exists 
       fail:
-        msg: "Test validation failed. Kubeconfigs not found..."
+        msg: "Test validation failed. Kubeconfig not found. Please save source kubeconfig in `src.config` file for Stage 1 tests."
 
   - tags:
+    - test
     - test_setup
     block:
     - include_vars: "../benchmarks/DataGenerator/default.yml" 
@@ -29,10 +41,6 @@
   - tags:
     - test
     block:
-    - include_vars: 
-        file: "../benchmarks/DataGenerator/default.yml"
-        name: expected_vars
-
     - set_fact:
         stage_1_vars:
           namespaces_to_migrate:
@@ -43,12 +51,13 @@
         dest: "../1_pvc_data_gen/vars/pvc-data-gen.yml"
 
     - name: "Running Stage 1"
-      shell: "/usr/bin/python pvc_data_gen.py"
+      shell: "{{ binary_python }} pvc_data_gen.py"
       environment:
         KUBECONFIG: "{{ playbook_dir }}/src.config"
       args:
         chdir: "../1_pvc_data_gen"
       register: stage_1_results
+      ignore_errors: true
 
     - fail:
         msg: |
@@ -75,22 +84,22 @@
         pvc_data: "{{ lookup('file', '../output/pvc-data.json') | from_json }}"
 
     - block:
-      - name: "Ensuring expected namespace data is produced"
+      - name: "Verifying whether the expected namespace data is produced"
         assert:
           that:
           - namespace_data | length == 1
           - (namespace_data | first).get('namespace', '') == expected_vars.namespace
           - (namespace_data | first).get('annotations', []) | length > 0
 
-      - name: "Ensuring expected pvc data is produced [1]"
+      - name: "Verifying whether the expected pvc data is produced [1]"
         assert:
           that:
           - pvc_data | length == 1
           - (pvc_data | first).get('pvcs', []) | length == expected_vars.number_of_files
       
-      - name: "Ensuring expected pvc data is produced [2]"
+      - name: "Verifying whether the expected pvc data is produced [2]"
         assert:
           that:
           - (pvc_data | first).get('pvcs')[item|int].get('pvc_name', '') == "pvc-{{ item }}"
         with_sequence: start=0 end={{ expected_vars.number_of_files|int - 1 }}
-           
+

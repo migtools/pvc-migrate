@@ -1,0 +1,21 @@
+# ansible and python binaries to use for tests
+# this can either come from a virtualenv or you
+# can use system binaries provided that all the
+# requirements for pvc-migrate are satisfied in
+# your system level installations
+binary_ansible_playbook: /usr/bin/ansible-playbook
+binary_python: /usr/bin/python3
+
+# storage class mappings used for stage 2
+# make sure the values are correct based 
+# on your environment
+stage_2_storage_class_mappings:
+  mig_storage_class_mappings:
+    glusterfs-storage_RWO: gp2
+    glusterfs-storage_RWX: gp2
+    glusterfs-storage-block_RWO: gp2
+
+# public and private key combination to be 
+# used in rsync pod in Stage 3.
+rsync_pub_key: <public_key>
+rsync_private_key: <private_key>

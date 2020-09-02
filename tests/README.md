@@ -4,6 +4,8 @@ This is a collection of tests for pvc-migrate.
 
 ## Pre-Requisites
 
+### Prepare Kubeconfigs for Source and Destination clusters
+
 Create source and destination kubeconfigs in the `tests` directory.
 
 Login to your Source (3.x) cluster and save the kubeconfig in `src.config` file:
@@ -21,6 +23,17 @@ touch dest.config && export KUBECONFIG=dest.config
 
 oc login -u <username> -p <password> <destination_cluster_api_url>
 ```
+
+### Prepare test configuration file
+
+Copy `test-config.yml.sample` to `test-config.yml`:
+
+```sh
+cp test-config.yml.sample test-config.yml
+```
+
+This file contains configuration for different stages. Follow the comments in the file to configure your tests.
+
 
 ## Stage 1 tests
 

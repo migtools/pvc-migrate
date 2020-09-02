@@ -1,0 +1,96 @@
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "./test-config.yml"
+  tasks:
+  - tags:
+    - test_prepare
+    - test
+    - test_validation
+    block:
+    - include_vars:
+        file: "../benchmarks/DataGenerator/default.yml"
+        name: expected_vars
+
+  - tags:
+    - validation
+    block:
+    - name: "Ensure kubeconfig file is present"
+      stat:
+        path: "dest.config"
+      register: kubeconfig
+
+    - when:
+      - not kubeconfig.stat.exists
+      fail:
+        msg: "Test validation failed. Kubeconfig not found. Please save destination kubeconfig in `dest.config` file for Stage 2 tests."
+
+  - tags:
+    - test
+    - test_setup
+    block:
+    - include_vars: "../benchmarks/DataGenerator/default.yml"
+
+    - name: "Ensure namespace doesn't exist on the destination cluster"
+      k8s:
+        state: absent
+        definition: "{{ lookup('template', '../benchmarks/DataGenerator/manifest.yml.j2') }}"
+        kubeconfig: "dest.config"
+
+  - tags:
+    - test
+    block:
+    - copy:
+        content: "{{ stage_2_storage_class_mappings | to_nice_yaml }}"
+        dest: "../2_pvc_destination_gen/vars/storage-class-mappings.yml"
+
+    - name: "Run stage 2"
+      environment:
+        KUBECONFIG: "{{ playbook_dir }}/dest.config"
+      args:
+        chdir: "../2_pvc_destination_gen"
+      shell: "{{ binary_ansible_playbook }} pvc-destination-gen.yml"
+      register: stage_2_results
+      ignore_errors: true
+
+    - when:
+      - stage_2_results.rc != 0
+      fail:
+        msg: |
+          Stage 2 execution failed with error -
+          {{ stage_2_results.stdout }}
+
+  - tags:
+    - test_verification
+    block:
+    - name: "Collect namespace info from destination"
+      k8s_info:
+        kind: Namespace
+        name: "{{ expected_vars.namespace }}"
+        kubeconfig: "dest.config"
+      register: ns_info
+
+    - name: "Collect pvc info from destination"
+      k8s_info:
+        kind: PersistentVolumeClaim
+        namespace: "{{ expected_vars.namespace }}"
+        kubeconfig: "dest.config"
+      register: pvc_info
+
+    - name: "Verifying whether namespace created on destination"
+      assert:
+        that:
+        - ns_info.get('resources', []) | length > 0
+        - (ns_info.get('resources', []) | first).get('metadata', {}).get('name', '') == expected_vars.namespace
+
+    - name: "Verifying whether the pvcs are created on destination"
+      assert:
+        that:
+        - pvc_info.get('resources', []) | length == expected_vars.number_of_files
+    
+    - name: "Verifying whether the right pvcs are created on destination"
+      assert:
+        that:
+        - pvc_info.get('resources', [])[item|int].get('metadata', {}).get('name', '') == "pvc-{{ item }}"
+      with_sequence: start=0 end={{ expected_vars.number_of_files|int - 1 }}
+
