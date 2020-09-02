@@ -40,7 +40,7 @@ This file contains configuration for different stages. Follow the comments in th
 To run Stage 1 tests:
 
 ```sh
-ansible-playbook 1_pvc_data_gen.yml
+ansible-playbook 1_pvc_data_gen_test.yml
 ```
 
 ## Stage 2 tests
@@ -52,7 +52,7 @@ Prior to running Stage 2 tests, ensure:
 To run Stage 2 tests:
 
 ```sh
-ansible-playbook 2_pvc_destination_gen.yml
+ansible-playbook 2_pvc_destination_gen_test.yml
 ```
 
 ## Stage 3 tests
@@ -64,5 +64,5 @@ Prior to running Stage 3 tests, ensure:
 To run Stage 3 tests:
 
 ```sh
-ansible-playbook 3_run_rsync.yml
+ansible-playbook 3_run_rsync_test.yml
 ```
