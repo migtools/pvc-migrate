@@ -1,0 +1,86 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "./test-config.yml"
+  tasks:
+  - tags:
+    - test_prepare
+    - test
+    - test_verification
+    block:
+    - include_vars: 
+        file: "../benchmarks/DataGenerator/default.yml"
+        name: expected_vars
+
+  - tags:
+    - validation
+    block:
+    - name: "Ensure kubeconfig file is present"
+      stat:
+        path: "dest.config"
+      register: kubeconfig
+
+    - when:
+      - not kubeconfig.stat.exists 
+      fail:
+        msg: "Test validation failed. Kubeconfig not found. Please save destination kubeconfig in `dest.config` file for Stage 3 tests."
+
+  - tags:
+    - test
+    block:
+    - name: "Running Stage 3"
+      shell: "{{ binary_ansible_playbook }} run-rsync.yml -e mig_dest_ssh_public_key={{ rsync_pub_key }} -e mig_dest_ssh_private_key={{ rsync_private_key }}"
+      environment:
+        KUBECONFIG: "{{ playbook_dir }}/dest.config"
+      args:
+        chdir: "../3_run_rsync"
+      register: stage_3_results
+      ignore_errors: true
+
+    - fail:
+        msg: |
+          Stage 3 execution failed with error - 
+          {{ stage_3_results.stdout }}
+      when: stage_3_results.rc != 0
+
+  - tags:
+    - test_verification
+    block:
+    - name: "Verifying whether Stage 3 output files exist [1]"
+      stat:
+        path: "../output/{{ expected_vars.namespace }}-successful.json"
+      register: success_output
+
+    - name: "Verifying whether Stage 3 output files exist [2]"
+      stat:
+        path: "../output/{{ expected_vars.namespace }}-failed.json"
+      register: failure_output
+
+    - when:
+      - not success_output.stat.exists
+      fail:
+        msg: "Stage 3 output not found"
+
+    - when:
+      - not failure_output.stat.exists
+      fail:
+        msg: "Stage 3 output not found"
+
+    - name: "Reading Stage 3 outputs"
+      set_fact:
+        success_data: "{{ lookup('file', '../output/{{ expected_vars.namespace }}-successful.json') | from_json }}"
+        failure_data: "{{ lookup('file', '../output/{{ expected_vars.namespace }}-failed.json') | from_json }}"
+
+    - block:
+      - name: "Verifying whether all PVCs succeded"
+        assert:
+          that:
+          - success_data | length == expected_vars.number_of_files
+
+      - name: "Verifying whether the expected pvcs succeded"
+        assert:
+          that:
+          - success_data[item|int].get('name', '') == "pvc-{{ item }}"
+        with_sequence: start=0 end={{ expected_vars.number_of_files|int - 1 }}
+

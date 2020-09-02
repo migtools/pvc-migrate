@@ -1,0 +1,105 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "./test-config.yml"
+  tasks:
+  - tags:
+    - test_prepare
+    - test
+    - test_validation
+    block:
+    - include_vars: 
+        file: "../benchmarks/DataGenerator/default.yml"
+        name: expected_vars
+
+  - tags:
+    - validation
+    block:
+    - name: "Ensure kubeconfig file is present"
+      stat:
+        path: "src.config"
+      register: kubeconfig
+
+    - when:
+      - not kubeconfig.stat.exists 
+      fail:
+        msg: "Test validation failed. Kubeconfig not found. Please save source kubeconfig in `src.config` file for Stage 1 tests."
+
+  - tags:
+    - test
+    - test_setup
+    block:
+    - include_vars: "../benchmarks/DataGenerator/default.yml" 
+
+    - name: "Deploying benchmark app on source cluster"
+      k8s:
+        state: present
+        definition: "{{ lookup('template', '../benchmarks/DataGenerator/manifest.yml.j2') }}"
+        kubeconfig: "src.config"
+
+  - tags:
+    - test
+    block:
+    - set_fact:
+        stage_1_vars:
+          namespaces_to_migrate:
+          - "{{ expected_vars.namespace }}"
+
+    - copy:
+        content: "{{ stage_1_vars | to_nice_yaml }}"
+        dest: "../1_pvc_data_gen/vars/pvc-data-gen.yml"
+
+    - name: "Running Stage 1"
+      shell: "{{ binary_python }} pvc_data_gen.py"
+      environment:
+        KUBECONFIG: "{{ playbook_dir }}/src.config"
+      args:
+        chdir: "../1_pvc_data_gen"
+      register: stage_1_results
+      ignore_errors: true
+
+    - fail:
+        msg: |
+          Stage 1 execution failed with error - 
+          {{ stage_1_results.stdout }}
+      when: stage_1_results.rc != 0
+
+  - tags:
+    - test_verification
+    block:
+    - name: "Verifying whether Stage 1 output file exists"
+      stat:
+        path: "../output/namespace-data.json"
+      register: namespace_output
+
+    - when:
+      - not namespace_output.stat.exists
+      fail:
+        msg: "Stage 1 output file not found"
+
+    - name: "Reading Stage 1 output"
+      set_fact:
+        namespace_data: "{{ lookup('file', '../output/namespace-data.json') | from_json }}"
+        pvc_data: "{{ lookup('file', '../output/pvc-data.json') | from_json }}"
+
+    - block:
+      - name: "Verifying whether the expected namespace data is produced"
+        assert:
+          that:
+          - namespace_data | length == 1
+          - (namespace_data | first).get('namespace', '') == expected_vars.namespace
+          - (namespace_data | first).get('annotations', []) | length > 0
+
+      - name: "Verifying whether the expected pvc data is produced [1]"
+        assert:
+          that:
+          - pvc_data | length == 1
+          - (pvc_data | first).get('pvcs', []) | length == expected_vars.number_of_files
+      
+      - name: "Verifying whether the expected pvc data is produced [2]"
+        assert:
+          that:
+          - (pvc_data | first).get('pvcs')[item|int].get('pvc_name', '') == "pvc-{{ item }}"
+        with_sequence: start=0 end={{ expected_vars.number_of_files|int - 1 }}
+
