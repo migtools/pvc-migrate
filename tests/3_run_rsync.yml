@@ -7,7 +7,7 @@
   - tags:
     - test_prepare
     - test
-    - test_validation
+    - test_verification
     block:
     - include_vars: 
         file: "../benchmarks/DataGenerator/default.yml"
