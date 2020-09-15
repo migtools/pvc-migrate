@@ -135,7 +135,7 @@
       shell: "rsync {{ rsync_opts }} --port {{ stunnel_port }} {{ mig_source_data_location }} rsync://{{ mig_dest_ssh_user }}@localhost/{{ pvc_vol_safe_name }}/"
       register: sync_output
       become: yes
-
+      become_user: root
   rescue:
     - vars:
         sync_rc:
