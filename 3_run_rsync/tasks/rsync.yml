@@ -38,7 +38,8 @@
       yum:
         name: stunnel
         state: latest
-      become: true
+      become: yes
+      become_user: root
 
     - name: "Write stunnel.conf"
       copy:
@@ -56,20 +57,23 @@
           verify = 2
           key = /etc/stunnel/tls.key
         dest: /etc/stunnel/stunnel.conf
-      become: true
+      become: yes
+      become_user: root
 
     - name: "Write tls.crt"
       copy:
         content: "{{ stunnel_crt['content']|b64decode }}"
         dest: /etc/stunnel/tls.crt
-      become: true
+      become: yes
+      become_user: root
 
     - name: "Write tls.key"
       copy:
         content: "{{ stunnel_key['content']|b64decode }}"
         dest: /etc/stunnel/tls.key
         mode: 0600
-      become: true
+      become: yes
+      become_user: root
 
     - name: "Write stunnel systemd service unit file"
       copy:
@@ -86,20 +90,23 @@
           [Install]
           WantedBy=multi-user.target
         dest: /etc/systemd/system/stunnel.service
-      become: true
+      become: yes
+      become_user: root
 
     - name: "Start stunnel"
       systemd:
         name: "stunnel"
         state: restarted
         daemon_reload: yes
-      become: true
+      become: yes
+      become_user: root
 
     - name: "Ensure .ssh directory on source node"
       file:
         path: "~/.ssh"
         state: directory
       become: yes
+      become_user: root
 
     - name: "Copying private key to source node"
       copy:
@@ -107,6 +114,7 @@
         dest: "{{ mig_dest_ssh_key_remote_location }}"
         mode: 0600
       become: yes
+      become_user: root
 
     - name: "Wait for dns"
       shell: "nslookup {{ mig_dest_service_url }}"
@@ -120,6 +128,7 @@
         path: "{{ mig_source_data_location }}"
       register: source_dir_stat
       become: yes
+      become_user: root
 
     - when: not source_dir_stat.get('stat', {}).get('exists', False)
       block:
@@ -135,7 +144,7 @@
       shell: "rsync {{ rsync_opts }} --port {{ stunnel_port }} {{ mig_source_data_location }} rsync://{{ mig_dest_ssh_user }}@localhost/{{ pvc_vol_safe_name }}/"
       register: sync_output
       become: yes
-
+      become_user: root
   rescue:
     - vars:
         sync_rc:
@@ -148,12 +157,14 @@
         path: "{{ mig_dest_ssh_key_remote_location }}"
         state: absent
       become: yes
+      become_user: root
 
     - name: "Stop stunnel"
       systemd:
         name: "stunnel"
         state: stopped
-      become: true
+      become: yes
+      become_user: root
 
     - name: "Collect failed pvcs"
       vars:
