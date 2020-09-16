@@ -15,7 +15,7 @@ data:
     max = 3
     auth users = {{ mig_dest_ssh_user|string }}
     secrets file = /etc/rsyncd.secrets
-    hosts allow = ::1
+    hosts allow = ::1, 127.0.0.1, localhost
     uid = root
     gid = root
 
@@ -27,7 +27,7 @@ data:
         uid =  root
         gid = root
         list = yes
-        hosts allow = ::1
+        hosts allow = ::1, 127.0.0.1, localhost
         auth users = {{ mig_dest_ssh_user|string }}
         secrets file = /etc/rsyncd.secrets
         read only = false
