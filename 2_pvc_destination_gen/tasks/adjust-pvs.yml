@@ -1,4 +1,6 @@
 - delegate_to: "{{ node_name }}"
+  vars:
+    ansible_user: "{{ ssh_username }}"
   block:
   - name: "Finding PVCs associated with {{ node_name }}"
     set_fact:
