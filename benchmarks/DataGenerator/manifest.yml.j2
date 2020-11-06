@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: {{ namespace }}
-{% for i in range(number_of_files) %}
+{% for i in range(number_of_files|int) %}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -25,7 +25,7 @@ metadata:
   namespace: {{ namespace }}
 spec:
   volumes:
-{% for i in range(number_of_files) %}
+{% for i in range(number_of_files|int) %}
   - name: "vol-{{ i }}" 
     persistentVolumeClaim:
       claimName: "pvc-{{ i }}"
@@ -35,7 +35,7 @@ spec:
     imagePullPolicy: Always
     image: {{ image }}
     volumeMounts:
-{% for i in range(number_of_files) %}
+{% for i in range(number_of_files|int) %}
     - mountPath: "/opt/mounts/mnt{{ i+1 }}"
       name: "vol-{{ i }}"
 {% endfor %}
@@ -46,3 +46,4 @@ spec:
       value: "{{ number_of_files }}"
     - name: FILE_SIZE
       value: "{{ file_size }}"
+
