@@ -1,0 +1,64 @@
+---
+- set_fact:
+    name_query: "[?pvc_name=='{{ original_pvc_data.pvc_name }}']"
+    ns_query: "[?pvc_namespace=='{{ original_pvc_data.pvc_namespace }}']"
+
+- set_fact:
+    use_original_capacity: "{{ adjustment_report | json_query(name_query) | json_query(ns_query) | length == 0 }}" 
+    
+- set_fact:
+    adjustment_data: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first) }}"
+    adjusted_capacity: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first).adjusted_pvc_capacity if not use_original_capacity else original_pvc_data.capacity }}"
+
+- name: "Adjusting resulting sizes for applicable PVCs"
+  set_fact:
+    adjusted_pvc_size:
+      capacity: "{{ original_pvc_data.capacity if use_original_capacity else adjusted_capacity }}"
+
+- set_fact:
+    pos_response:
+    - "Y"
+    - "y"
+    neg_response:
+    - "N"
+    - "n"
+
+- when: not use_original_capacity
+  pause:
+    prompt: |
+      This PVC needs an adjustment on the destination cluster because {{ adjustment_data.reason }}
+      The original requested size of the PVC is {{ adjustment_data.original_pvc_capacity }} and the actual provisioned volume size is {{ adjustment_data.actual_pv_size }}.
+      The actual usage of the volume on the source cluster is {{ adjustment_data.original_volume_usage }}.
+      Automatic adjustment has proposed destination size as {{ adjustment_data.adjusted_pvc_capacity }}.
+      Is this size accepteable? (Y/N)
+  retries: 10 
+  register: confirm_size
+  until: confirm_size.user_input in pos_response + neg_response
+
+- when:
+  - confirm_size is defined
+  - confirm_size.user_input is defined 
+  - confirm_size.user_input in neg_response
+  block:
+  - pause:
+      prompt: |
+        Please enter the new desired size for the PVC. 
+    register: size
+
+  - pause:
+      prompt: |
+        Please confirm new adjusted size {{ size.user_input }}. (Y/N)
+    retries: 4
+    register: confirm_size_confirm
+    until: confirm_size_confirm.user_input in pos_response + neg_response
+
+  - set_fact:
+      adjusted_pvc_size:
+        capacity: "{{ size.user_input }}"
+    when:
+    - confirm_size_confirm.user_input is defined
+    - confirm_size_confirm.user_input in pos_response
+
+- name: "Setting final computed size"
+  set_fact:
+    mig_dest_adjusted_pvc_data: "{{ mig_dest_adjusted_pvc_data + [(original_pvc_data|combine(adjusted_pvc_size, recursive=true))] }}"
