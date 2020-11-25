@@ -27,16 +27,7 @@
       adjustment_report: "{{ lookup('file', pv_size_adjustment_report_path) | from_json }}"
     when: adjustment_report_file.stat.exists
 
-  - name: "Adjusting resulting sizes for applicable PVCs"
-    vars:
-      name_query: "[?pvc_name=='{{ original_pvc_data.pvc_name }}']"
-      ns_query: "[?pvc_namespace=='{{ original_pvc_data.pvc_namespace }}']"
-      use_original_capacity: "{{ adjustment_report | json_query(name_query) | json_query(ns_query) | length == 0 }}"
-      adjusted_capacity: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first).adjusted_pvc_capacity if not use_original_capacity else original_pvc_data.capacity }}"
-      adjusted_pvc_size:
-        capacity: "{{ original_pvc_data.capacity if use_original_capacity else adjusted_capacity }}"
-    set_fact:
-      mig_dest_adjusted_pvc_data: "{{ mig_dest_adjusted_pvc_data + [(original_pvc_data|combine(adjusted_pvc_size, recursive=true))] }}"
+  - include_tasks: tasks/adjustment-interaction.yml
     loop: "{{ mig_dest_pvc_data }}"
     loop_control:
       loop_var: original_pvc_data
