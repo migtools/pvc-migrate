@@ -26,38 +26,19 @@
 - when: not use_original_capacity
   pause:
     prompt: |
-      This PVC needs an adjustment on the destination cluster because {{ adjustment_data.reason }}
-      The original requested size of the PVC is {{ adjustment_data.original_pvc_capacity }} and the actual provisioned volume size is {{ adjustment_data.actual_pv_size }}.
-      The actual usage of the volume on the source cluster is {{ adjustment_data.original_volume_usage }}.
-      Automatic adjustment has proposed destination size as {{ adjustment_data.adjusted_pvc_capacity }}.
-      Is this size accepteable? (Y/N)
-  retries: 10 
+      PVC '{{ adjustment_data.pvc_name }}' in namespace '{{ adjustment_data.pvc_namespace }}' needs an adjustment on the destination cluster because {{ adjustment_data.reason }}
+      
+      Original requested PVC size (source) : {{ adjustment_data.original_pvc_capacity }}
+      Actual provisioned PV size (source) :  {{ adjustment_data.actual_pv_size }}
+      Volume utilization (source) :          {{ adjustment_data.original_volume_usage }}
+      Proposed new size (target) :           {{ adjustment_data.adjusted_pvc_capacity }}
+      Is the proposed new size accepteable? (Y/N)
+  retries: 10
   register: confirm_size
   until: confirm_size.user_input in pos_response + neg_response
 
-- when:
-  - confirm_size is defined
-  - confirm_size.user_input is defined 
-  - confirm_size.user_input in neg_response
-  block:
-  - pause:
-      prompt: |
-        Please enter the new desired size for the PVC. 
-    register: size
-
-  - pause:
-      prompt: |
-        Please confirm new adjusted size {{ size.user_input }}. (Y/N)
-    retries: 4
-    register: confirm_size_confirm
-    until: confirm_size_confirm.user_input in pos_response + neg_response
-
-  - set_fact:
-      adjusted_pvc_size:
-        capacity: "{{ size.user_input }}"
-    when:
-    - confirm_size_confirm.user_input is defined
-    - confirm_size_confirm.user_input in pos_response
+- when: confirm_size.get('user_input', '') in neg_response
+  include_tasks: ./adjustment-questionnaire.yml
 
 - name: "Setting final computed size"
   set_fact:
