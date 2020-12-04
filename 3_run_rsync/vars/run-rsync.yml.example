@@ -10,3 +10,32 @@ mig_dest_ssh_private_key: "" # path to private key used for SSH auth into transf
 
 # [DEPRECATED] Wait for transfer pod service ELB deletion to complete before proceeding to next PVC.
 wait_for_finalizer: false
+
+# plugins supported by kubernetes
+# "kubernetes.io/aws-ebs"
+# "kubernetes.io/azure-file"
+# "kubernetes.io/azure-disk"
+# "kubernetes.io/cephfs"
+# "kubernetes.io/cinder"
+# "kubernetes.io/csi"
+# "kubernetes.io/fc"
+# "kubernetes.io/flexvolume"
+# "kubernetes.io/flocker"
+# "kubernetes.io/gce-pd"
+# "kubernetes.io/host-path"
+# "kubernetes.io/iscsi"
+# "kubernetes.io/local-volume"
+# "kubernetes.io/nfs"
+# "kubernetes.io/portworx-volume"
+# "kubernetes.io/quobyte"
+# "kubernetes.io/rbd"
+# "kubernetes.io/scaleio"
+# "kubernetes.io/storageos"
+# "kubernetes.io/vsphere-volume"
+
+# This above list is curated from https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+# the values are cross checked from https://github.com/kubernetes/kubernetes/tree/master/pkg/volume
+# example of a plugin name with its path https://github.com/kubernetes/kubernetes/blob/a744bddbf497ab718a40bee1c730e7e848e471ed/pkg/volume/awsebs/aws_ebs.go#L59
+# more context https://github.com/kubernetes/kubernetes/blob/a744bddbf497ab718a40bee1c730e7e848e471ed/pkg/volume/awsebs/aws_ebs.go#L64
+
+provisioner: "kubernetes.io/glusterfs"

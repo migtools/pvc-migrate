@@ -11,7 +11,7 @@
 
 - set_fact:
     mig_source_data_base_location: "/var/lib/origin/openshift.local.volumes"
-    mig_source_data_location_k8s_mount: "kubernetes.io~glusterfs"
+    mig_source_data_location_k8s_mount: "{{ provisioner | replace('/', '~') }}"
 
 - set_fact:
     mig_dest_service_url: "{{ rsync_route.resources[0].spec.host }}"
