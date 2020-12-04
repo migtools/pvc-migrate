@@ -27,7 +27,19 @@ mig_dest_ssh_private_key: "" # path to private key used for SSH auth into transf
 
 # Wait for transfer pod service ELB deletion to complete before proceeding to next PVC
 wait_for_finalizer: false
+
+provisioner: "kubernetes.io/glusterfs"
 ```
+
+Replace the dynamicProvisionerName by picking one from the supported options
+in [run-rsync.yml.example](./vars/run-rsync.yml.example).
+
+_*Note:*_ pvc-migrate assumes that all the pvc's in your namespaces are
+provisioned by a single provisioner. Please take a look at 
+[issue 152](https://github.com/konveyor/pvc-migrate/issues/152) for more
+ context on the problem.
+
+
 
 4. Run Stage 3 playbook while KUBECONFIG is set for connection to **destination cluster**
 ```
