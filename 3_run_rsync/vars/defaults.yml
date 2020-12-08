@@ -19,5 +19,6 @@ stunnel_port: 2222
 
 # Rsync default options
 rsync_opts: "-aPvvHh --delete"
+rsyncd_log_filepath: "/var/log/pvc-migrate/rsyncd.log"
 
 route_host: ""
