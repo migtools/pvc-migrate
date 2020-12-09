@@ -49,6 +49,8 @@
           sslVersion = TLSv1.2
           client = yes
           syslog = no
+          debug = 7
+          output = /var/log/stunnel.log
           [rsync]
           accept = {{ stunnel_port }}
           CAFile = /etc/stunnel/tls.crt
