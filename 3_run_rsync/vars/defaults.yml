@@ -21,3 +21,4 @@ stunnel_port: 2222
 rsync_opts: "-aPvvHh --delete"
 
 route_host: ""
+route_timeout_seconds: 600
