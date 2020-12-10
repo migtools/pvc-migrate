@@ -28,6 +28,8 @@ metadata:
     app: "{{ pod_name }}"
     purpose: rsync
     owner: pvc-migrate
+  annotations:
+    haproxy.router.openshift.io/timeout: "{{ route_timeout_seconds }}s"
 spec:
 {% if route_host != "" %}
   host: "{{ route_host }}"
