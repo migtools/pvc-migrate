@@ -7,7 +7,7 @@
     use_original_capacity: "{{ adjustment_report | json_query(name_query) | json_query(ns_query) | length == 0 }}" 
     
 - set_fact:
-    adjustment_data: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first) }}"
+    adjustment_data: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first) if not use_original_capacity else None }}"
     adjusted_capacity: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first).adjusted_pvc_capacity if not use_original_capacity else original_pvc_data.capacity }}"
 
 - name: "Adjusting resulting sizes for applicable PVCs"
