@@ -79,8 +79,8 @@
               and svc.resources[0].spec is defined
               and svc.resources[0].spec.ports is defined
               and (svc.resources[0].spec.ports | length) == 1
-              and svc.resources[0].spec.ports.[0].name == 'ssh'
-              and svc.resources[0].spec.ports.[0].nodePort is defined"
+              and svc.resources[0].spec.ports[0].name == 'ssh'
+              and svc.resources[0].spec.ports[0].nodePort is defined"
 
   retries: "{{ transfer_svc_wait_retries }}"
   delay: 3

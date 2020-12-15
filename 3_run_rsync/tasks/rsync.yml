@@ -15,7 +15,7 @@
 
 - set_fact:
     mig_dest_service_url: "{{ pod.spec.nodeName }}"
-    rsync_dest_port: "{{ svc.resources[0].spec.ports.[0].nodePort }}"
+    rsync_dest_port: "{{ svc.resources[0].spec.ports[0].nodePort }}"
     mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_vol_safe_name }}"
     mig_source_data_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_data_location_k8s_mount }}/{{ volume_name }}/"
     mig_source_host: "{{ node_name }}"
