@@ -76,11 +76,12 @@
     namespace: "{{ pvc_namespace }}"
   register: svc
   until: " svc.resources is defined
-            and svc.resources[0].status is defined
-            and svc.resources[0].status.loadBalancer is defined
-            and svc.resources[0].status.loadBalancer.ingress is defined
-            and (svc.resources[0].status.loadBalancer.ingress | length) == 1
-            and svc.resources[0].status.loadBalancer.ingress[0].hostname is defined"
+              and svc.resources[0].spec is defined
+              and svc.resources[0].spec.ports is defined
+              and (svc.resources[0].spec.ports | length) == 1
+              and svc.resources[0].spec.ports.[0].name == 'ssh'
+              and svc.resources[0].spec.ports.[0].nodePort is defined"
+
   retries: "{{ transfer_svc_wait_retries }}"
   delay: 3
 
