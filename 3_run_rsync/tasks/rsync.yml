@@ -14,7 +14,8 @@
     mig_source_data_location_k8s_mount: "kubernetes.io~glusterfs"
 
 - set_fact:
-    mig_dest_service_url: "{{ svc.resources[0].status.loadBalancer.ingress[0].hostname }}"
+    mig_dest_service_url: "{{ dest_ip_address }}"
+    rsync_dest_port: "{{ svc.resources[0].spec.ports[0].nodePort }}"
     mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_vol_safe_name }}"
     mig_source_data_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_data_location_k8s_mount }}/{{ volume_name }}/"
     mig_source_host: "{{ node_name }}"
@@ -39,13 +40,6 @@
       mode: 0600
     become: yes
 
-  - name: "Wait for dns"
-    shell: "nslookup {{ mig_dest_service_url }}"
-    register: dig_output
-    until: dig_output.rc == 0
-    retries: 100
-    delay: 3
-
   - name: "Ensure directory exists on the source"
     stat:
       path: "{{ mig_source_data_location }}"
@@ -59,7 +53,7 @@
         Skipping to the next PV...
 
   - name: "Synchronizing files. This may take a while..."
-    shell: "rsync -aPvvH {{ mig_source_data_location }} -e 'ssh -p 2222 -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_ssh_user }}@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
+    shell: "rsync -aPvvH {{ mig_source_data_location }} -e 'ssh -p {{ rsync_dest_port }} -o StrictHostKeyChecking=no -i {{ mig_dest_ssh_key_remote_location }}' {{ mig_dest_ssh_user }}@{{ mig_dest_service_url }}:{{ mig_dest_data_location }}"
     register: sync_output
     become: yes
 
