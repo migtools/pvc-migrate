@@ -85,6 +85,18 @@
   retries: "{{ transfer_svc_wait_retries }}"
   delay: 3
 
+- name: "Get the destination node"
+  k8s_info:
+    api_version: v1
+    kind: node
+    name: "{{ pod.resources[0].spec.nodeName }}"
+  register: dest_node
+
+- set_fact:
+#    if the tasks fails here, chances are this node does not have the right status.
+#      Please either replace the node or fix the status to make pvc-migrate work
+    dest_ip_address: "{{ dest_node.resources[0].status | json_query('addresses[? type==`InternalIP`].address') }}"
+
 - set_fact:
     failed_pvcs: []
     successful_pvcs: []
