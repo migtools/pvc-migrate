@@ -9,3 +9,4 @@ successful_pvcs_dir: ../output/
 # Recommended Transfer Pod Image
 transfer_pod_image: "quay.io/konveyor/ssh-transfer:latest"
 mig_dest_ssh_user: root # note: image above has been designed to work with login as root
+rsync_opts:  "-aPvvH --bw-limit=100000"
