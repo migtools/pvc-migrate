@@ -14,7 +14,7 @@
     mig_source_data_location_k8s_mount: "kubernetes.io~glusterfs"
 
 - set_fact:
-    mig_dest_service_url: "{{ dest_ip_address }}"
+    mig_dest_service_url: "{{ dest_ip_address[0] }}"
     rsync_dest_port: "{{ svc.resources[0].spec.ports[0].nodePort }}"
     mig_dest_data_location: "/mnt/{{ pvc_ns }}/{{ pvc_vol_safe_name }}"
     mig_source_data_location: "{{ mig_source_data_base_location }}/pods/{{ bound_pod_uid }}/volumes/{{ mig_source_data_location_k8s_mount }}/{{ volume_name }}/"
