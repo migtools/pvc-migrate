@@ -12,7 +12,7 @@ data:
     syslog facility = local7
     read only = no
     list = yes
-    log file = {{ rsyncd_log_filepath }}
+    log file = /dev/stdout
     max verbosity = 4
     auth users = {{ mig_dest_ssh_user|string }}
     secrets file = /etc/rsyncd.secrets

@@ -12,8 +12,6 @@ spec:
   - name: pvc-migrate-stunnel-conf
     configMap:
       name: "{{ stunnel_config }}"
-  - name: rsyncd-log
-    emptyDir: {}
 {% for pvc in pvcs %}
   - name: "{{ pvc.pvc_vol_safe_name }}"
     persistentVolumeClaim:
@@ -23,19 +21,6 @@ spec:
     configMap:
       name: "{{ rsyncd_config }}"
   containers:
-  - name: rsyncd-logs
-    image: "{{ transfer_pod_image }}"
-    command:
-    - bash
-    - -c
-    - tail -f  {{ rsyncd_log_filepath }}
-    volumeMounts:
-    - mountPath: /var/log/pvc-migrate
-      name: rsyncd-log
-    securityContext:
-      privileged: true
-      readOnlyRootFilesystem: false
-      runAsUser: 0
   - name: rsyncd
     resources:
       limits:
@@ -55,8 +40,6 @@ spec:
       name: rsyncd
       protocol: TCP
     volumeMounts:
-    - mountPath: {{ rsyncd_log_filepath }}
-      name: rsyncd-log
 {% for pvc in pvcs %}
     - mountPath: "/mnt/{{ pvc_namespace }}/{{ pvc.pvc_vol_safe_name }}"
       name: "{{ pvc.pvc_vol_safe_name }}"
