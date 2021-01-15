@@ -1,0 +1,45 @@
+---
+- set_fact:
+    name_query: "[?pvc_name=='{{ original_pvc_data.pvc_name }}']"
+    ns_query: "[?pvc_namespace=='{{ original_pvc_data.pvc_namespace }}']"
+
+- set_fact:
+    use_original_capacity: "{{ adjustment_report | json_query(name_query) | json_query(ns_query) | length == 0 }}" 
+    
+- set_fact:
+    adjustment_data: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first) if not use_original_capacity else None }}"
+    adjusted_capacity: "{{ (adjustment_report | json_query(name_query) | json_query(ns_query) | first).adjusted_pvc_capacity if not use_original_capacity else original_pvc_data.capacity }}"
+
+- name: "Adjusting resulting sizes for applicable PVCs"
+  set_fact:
+    adjusted_pvc_size:
+      capacity: "{{ original_pvc_data.capacity if use_original_capacity else adjusted_capacity }}"
+
+- set_fact:
+    pos_response:
+    - "Y"
+    - "y"
+    neg_response:
+    - "N"
+    - "n"
+
+- when: not use_original_capacity
+  pause:
+    prompt: |
+      PVC '{{ adjustment_data.pvc_name }}' in namespace '{{ adjustment_data.pvc_namespace }}' needs an adjustment on the destination cluster because {{ adjustment_data.reason }}
+      
+      Original requested PVC size (source) : {{ adjustment_data.original_pvc_capacity }}
+      Actual provisioned PV size (source) :  {{ adjustment_data.actual_pv_size }}
+      Volume utilization (source) :          {{ adjustment_data.original_volume_usage }}
+      Proposed new size (target) :           {{ adjustment_data.adjusted_pvc_capacity }}
+      Is the proposed new size accepteable? (Y/N)
+  retries: 10
+  register: confirm_size
+  until: confirm_size.user_input in pos_response + neg_response
+
+- when: confirm_size.get('user_input', '') in neg_response
+  include_tasks: ./adjustment-questionnaire.yml
+
+- name: "Setting final computed size"
+  set_fact:
+    mig_dest_adjusted_pvc_data: "{{ mig_dest_adjusted_pvc_data + [(original_pvc_data|combine(adjusted_pvc_size, recursive=true))] }}"

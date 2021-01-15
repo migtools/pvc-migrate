@@ -1,0 +1,18 @@
+- block:
+  - pause:
+      prompt: |
+        Please enter the new desired size for the PVC. 
+    register: size
+
+  - pause:
+      prompt: |
+        Please confirm new adjusted size {{ size.user_input }}. (Y/N)
+    register: confirm_size_confirm
+  
+  - when: confirm_size_confirm.get('user_input', '') in neg_response
+    include_tasks: ./adjustment-questionnaire.yml
+
+  - set_fact:
+      adjusted_pvc_size:
+        capacity: "{{ size.user_input }}"
+    when: confirm_size_confirm.get('user_input', '') in pos_response

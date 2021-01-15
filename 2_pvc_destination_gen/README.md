@@ -8,23 +8,23 @@ This playbook takes the input from [Stage 1](../1_pvc_data_gen) and creates PVC 
 
 ### Stage 2 (a)
 
-`Stage 2 (a)` scans the volumes on the source cluster to ensure :
+`Stage 2 (a)` scans the volumes on the source cluster to ensure:
 
 * The volumes on the source node are not full or close-to-full.
 * The requested size in PVC matches the actual volume size on the source.
 
 If any of the above conditions are met, `pvc-migrate` takes corrective actions to _adjust_ the PVC size on the destination cluster. 
 
-* When the volume is found to be full :
+* When the volume is found to be full:
   * The destination volume is grown by 5% of its original size on the source node. The value `5%` can be configured using variable `full_volume_grow_percentage`. The default value is set to `5.0`.
 * When the size of the volume doesn't match its requested size in the PVC :
   * The size of the actual volume is used to create PVC on the destination.
 
-Finally, `Stage 2 (a)` generates an intermediary report that contains information about the decisions `pvc-migrate` took regarding volume sizes along with the reasons behind them. The report can be found in the default output directory. The users are expected to read the report and confirm whether the corrective actions are accepteable. 
+Finally, `Stage 2 (a)` generates an intermediary report that contains information about the decisions `pvc-migrate` took regarding volume sizes along with the reasons behind them. The report can be found in the default output directory. 
 
 ### Stage 2 (b)
 
-This is the final sub-stage where `pvc-migrate` will read the output from `Stage 1` to create PVCs on the destination cluster. For every volume, it will also apply the corrective actions reported in `Stage 2 (a)` report, if applicable. 
+This is the final sub-stage where `pvc-migrate` will read the output from `Stage 1` to create PVCs on the destination cluster. For every volume, it will also apply the corrective actions reported in `Stage 2 (a)` report, if applicable. If a correction for PVC size is found, the playbook will pause and enter an interactive mode where the user has to confirm the new proposed size for each PVC. If the new size is not acceptable, the user can also manually enter the size they wish to request for the PVC on target cluster. See an example interaction in [PVC Size Adjustment Interaction Section](#pvc-size-adjustment-interaction)
 
 ## Usage:
 
@@ -82,3 +82,9 @@ oc get pvc -n sample-namespace
 ```
 
 6. Move on to [Stage 3](../3_run_rsync)
+
+### PVC Size Adjustment Interaction
+
+This interaction in `Stage 2 (b)` of pvc-migrate provides a way for the users to confirm the automatically _adjusted_ PVC sizes: 
+
+![Peek 2020-12-02 10-17](https://user-images.githubusercontent.com/9839757/100891860-b82b3200-3487-11eb-9ee8-5c6f140db654.gif)
